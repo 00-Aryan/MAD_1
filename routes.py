@@ -6,7 +6,12 @@ from app import app
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('home.html')
+
+# @app.route("/services")
+# def services():
+#     return render_template('Services Page')
+
 
 @app.route('/login')
 def login():
