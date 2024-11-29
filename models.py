@@ -8,12 +8,6 @@ from datetime import datetime
 ##models
 
 
-class Admin(db.Model):
-    id = db.Column(db.Integer, primary_key=True)  # Primary key
-    # username = db.Column(db.String(50), unique=True, nullable=False)
-    Email_id = db.Column(db.String(120), unique=True, nullable=False)
-    passhash = db.Column(db.String(128), nullable=False)
-
 class Customer(db.Model):
     id = db.Column(db.Integer,primary_key=True)
     Email_id = db.Column(db.String(32),unique=True,nullable = False)
@@ -21,6 +15,7 @@ class Customer(db.Model):
     name = db.Column(db.String(32))
     address = db.Column(db.String(32))
     Pin_Code = db.Column(db.String(8))
+    admin = db.Column(db.Boolean , default=False, nullable=False)
 
 
 
@@ -84,4 +79,20 @@ class Orders(db.Model):
 
 with app.app_context():
     db.create_all()
+    
+    # create admin if admin does not exist 
+    existing_admin = Customer.query.filter_by(admin=True).first()
+    if not existing_admin:
+        password_hash = generate_password_hash('admin')
+        admin_user = Customer(
+            Email_id='admin@123.com',  # Admin email
+            passhash=password_hash,
+            name='Admin',
+            admin=True
+        )
+        db.session.add(admin_user)
+        db.session.commit()
+        print("Admin created successfully.")
+    else:
+        print("Admin already exists. No changes made.")
 

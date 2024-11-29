@@ -1,6 +1,6 @@
 from flask import Flask , render_template,redirect,url_for,request,flash 
 
-from models import db, Customer, Professionals, Orders, Cart,Category,Admin
+from models import db, Customer, Professionals, Orders, Cart,Category
 
 from app import app
 
@@ -84,7 +84,7 @@ def post_register_customer():
     user.set_password(password)
     db.session.add(user)
     db.session.commit()
-    flash('Customer successfully registered')
+    flash('Customer successfully registered','success')
     return redirect(url_for('Login'))  # Redirect to a success or login page
 
 # Route for service provider registration form
