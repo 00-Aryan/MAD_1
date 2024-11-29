@@ -6,13 +6,14 @@ Login - Household Services
 {% block content %}
 <h1>Log in</h1>
 <form method="post" class ="form">
-<label for="username" class="form-label">Email_id :
+     <div class="form-group">
+<label for="username" class="form-label">Email_id : </label>
     <input type="text" name="email" id="email_id" class="form-control">
-</label>
-<br>
-<label for="password" class="form-label">Password :
+</div>
+<div class="form-group">
+<label for="password" class="form-label">Password : </label>
     <input type="password" name="password" id='password' class="form-control">
-</label>
+</div>
 <input type="submit" value="Login" class="btn btn-success">
 </form>
 {% endblock %}
@@ -28,13 +29,24 @@ Login - Household Services
 
         } 
         h1 {
-            display: flex;
-            flex-direction :column;
-            align-items :center ;
+            text-align :center;
             margin-top: 12%;
             position: relative;
             top: -10px;
         } 
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .form-label {
+            margin-right: 10px;
+            min-width: 80px; /* Adjust width for better alignment */
+            text-align: right;
+
+        }
+        .form-control {
+            flex: 1;
+        }
     </style>
 {% endblock %}
-

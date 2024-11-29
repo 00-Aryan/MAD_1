@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="HomeNav">
+<ul class="nav nav-pills">
+  <li class="nav-item">
+    <a class="nav-link active"  href="{{url_for('Login')}}">Login</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="{{url_for('SP_Home')}}">Service That we offer</a>
+  </li>
+</ul>
+</div>
+{% endblock %}
+ {% block style %}
+ <style>
+  .HomeNav{
+    display: flex;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    margin:19%; /* Adds spacing between nav items */
+    font-size: 28px;
+  }
+ </style>
+ {%endblock%}

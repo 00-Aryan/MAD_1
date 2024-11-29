@@ -1,0 +1,48 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Register - Customer Household Services
+{% endblock %}
+{% block content %}
+<h1>Register</h1>
+<form method="post" class="form">
+    <label for="name" class="form-label">Full_Name :
+        <input type="text" name="name" id="name" class="form-control" required>
+    </label>
+    <label for="username" class="form-label">Email_id :
+        <input type="text" name="email" id="email_id" class="form-control" required>
+    </label>
+    <label for="password" class="form-label">Password :
+        <input type="password" name="password" id='password' class="form-control" required>
+    </label>
+    <label for="name" class="form-label">Address :
+        <input type="Address" name="address" id="Description" class="form-control">
+    </label>
+    <label for="name" class="form-label">Pin_Code :
+        <input type="text" name="Pin_Code" id="Description" class="form-control">
+    </label>
+    <input type="submit" value="Register" class="btn btn-success"> 
+    <!-- name should be mentioned in request.form.get in routes -->
+</form>
+{% endblock %}
+
+
+{% block style %}
+<style>
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 8%;
+
+    }
+
+    h1 {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        top: 80px;
+    }
+</style>
+{% endblock %}
