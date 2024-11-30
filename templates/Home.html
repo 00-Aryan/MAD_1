@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="HomeNav">
+<!-- <div class="HomeNav">
 <ul class="nav nav-pills">
   <li class="nav-item">
     <a class="nav-link active"  href="{{url_for('Login')}}">Login</a>
@@ -9,7 +9,8 @@
     <a class="nav-link" href="{{url_for('SP_Home')}}">Service That we offer</a>
   </li>
 </ul>
-</div>
+</div> -->
+<h2>Home {{user.name}}</h2>
 {% endblock %}
  {% block style %}
  <style>
