@@ -144,7 +144,7 @@ Admin - Manage Services
         <div class="card-header bg-info text-white">
             <h4>Existing Services</h4>
         </div>
-        <div class="card-body">
+        <div class="card-body" >
             {% if services %}
             <table class="table table-striped">
                 <thead>
@@ -159,9 +159,9 @@ Admin - Manage Services
                     {% for service in services %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td>{{ service.name }}</td>
+                        <td>{{ service.service_name }}</td>
                         <td>${{ service.base_price }}</td>
-                        <td>
+                        <td class="text-end"> <!-- class text-end make the delete and edit buttons to the right -->
                             <form method="POST" action="{{ url_for('delete_service', service_id=service.id) }}" style="display:inline;">
                                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                             </form>
@@ -184,19 +184,24 @@ Admin - Manage Services
         </div>
         <div class="card-body">
             {% if professionals %}
-                <ul class="list-group">
-                    {% for professional in professionals %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ professional.name }} - {{ professional.email }}
-                        <form method="POST" action="{{ url_for('approve_professional', professional_id=professional.id) }}">
-                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                        </form>
-                    </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-muted">No pending approvals.</p>
-            {% endif %}
+    <ul class="list-group">
+        {% for professional in professionals %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ professional.name }} - {{ professional.email }}
+                <div class="d-flex">  <!-- buttons are aligned side by side -->
+                    <form method="POST" action="{{ url_for('approve_professional', professional_id=professional.id) }}">
+                        <button type="submit" class="btn btn-success btn-sm mr-2">Approve</button> <!-- Added margin-right for spacing -->
+                    </form>
+                    <form method="POST" action="{{ url_for('reject_professional', professional_id=professional.id) }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="text-muted">No pending approvals.</p>
+{% endif %}
         </div>
     </div>
 

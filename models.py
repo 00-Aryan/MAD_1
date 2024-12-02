@@ -47,7 +47,7 @@ class Professionals(db.Model):
     description = db.Column(db.String(128),nullable = True)
     service_type = db.Column(db.String(128))
     category_id = db.Column(db.Integer,db.ForeignKey('category.id'),nullable=False)
-    approved = db.Column(db.Boolean, default=False)
+    status = db.Column(db.String(16), nullable=False, default='pending')
     
     def set_password(self, password):
         self.passhash = generate_password_hash(password)
@@ -67,8 +67,8 @@ class Services(db.Model):
     service_name = db.Column(db.String(64),nullable = False)
     # Image = db.Column(db.String,nullable=True)
     description = db.Column(db.String(32),nullable= False)
-    Time_Required = db.Column(db.String(32),nullable= False)
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    time_required = db.Column(db.String(32),nullable= True)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
     category =db.relationship('Category', backref='services')
     
 class Category(db.Model):
