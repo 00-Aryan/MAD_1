@@ -1,0 +1,268 @@
+{# {% extends 'layout.html' %}
+
+{% block title %}
+Manage Services - Admin
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Manage Services</h1>
+    <p class="text-center text-muted">View, create, and manage all services available in the system.</p>
+
+    <!-- Section: Create New Service -->
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h5>Create New Service</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('create_service') }}">
+                <div class="mb-3">
+                    <label for="serviceName" class="form-label">Service Name</label>
+                    <input type="text" id="serviceName" name="service_name" class="form-control" placeholder="Enter service name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="serviceDescription" class="form-label">Service Description</label>
+                    <textarea id="serviceDescription" name="service_description" class="form-control" rows="3" placeholder="Enter a brief description" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="servicePrice" class="form-label">Service Price</label>
+                    <input type="number" id="servicePrice" name="service_price" class="form-control" placeholder="Enter price" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Service</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Section: Existing Services -->
+    <div class="card mt-4">
+        <div class="card-header bg-success text-white">
+            <h5>Existing Services</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Service Name</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services %}
+                    <tr>
+                        <th scope="row">{{ loop.index }}</th>
+                        <td>{{ service.name }}</td>
+                        <td>{{ service.description }}</td>
+                        <td>${{ service.price }}</td>
+                        <td>
+                            <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="{{ url_for('delete_service', service_id=service.id) }}" class="btn btn-danger btn-sm">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block style %}
+<style>
+    h1 {
+        margin-bottom: 1rem;
+    }
+    .card {
+        margin-bottom: 2rem;
+    }
+    .btn-sm {
+        margin-right: 5px;
+    }
+</style>
+{% endblock %}  #}
+
+{# {% extends 'layout.html' %}
+
+{% block title %}
+Manage Services - Admin
+{% endblock %}
+
+{% block content %}
+<h1> Admin Services Dashboard </h1>
+
+{% endblock %}
+
+{% block style %}
+<style>
+    h1 {
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+</style>
+{% endblock %} #}
+
+{# recent one #}
+
+{% extends 'layout.html' %}
+
+{% block title %}
+Admin - Manage Services
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Manage Services</h1>
+
+    <!-- Create New Service -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4>Create New Service</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('AdminServices') }}">
+                <div class="mb-3">
+                    <label for="service_name" class="form-label">Service Name</label>
+                    <input type="text" id="service_name" name="service_name" class="form-control" placeholder="e.g., Plumbing">
+                </div>
+                <div class="mb-3">
+                    <label for="base_price" class="form-label">Base Price</label>
+                    <input type="number" id="base_price" name="base_price" class="form-control" placeholder="e.g., 100">
+                </div>
+                <div class="mb-3">
+                    <label for="base_price" class="form-label">Description</label>
+                    <input type="text" id="Description" name="Description" class="form-control" placeholder="e.g., Information about service">
+                </div>
+                <button type="submit" class="btn btn-primary">Create Service</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Existing Services -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h4>Existing Services</h4>
+        </div>
+        <div class="card-body">
+            {% if services %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>id </th>
+                        <th>Service Name</th>
+                        <th>Base Price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ service.name }}</td>
+                        <td>${{ service.base_price }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('delete_service', service_id=service.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                            <a href="{{ url_for('edit_service_page', service_id=service.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">No services available.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Approve Service Professionals -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h4>Pending Approvals</h4>
+        </div>
+        <div class="card-body">
+            {% if professionals %}
+                <ul class="list-group">
+                    {% for professional in professionals %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ professional.name }} - {{ professional.email }}
+                        <form method="POST" action="{{ url_for('approve_professional', professional_id=professional.id) }}">
+                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">No pending approvals.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Block Customers/Service Professionals -->
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h4>Block Users</h4>
+        </div>
+        <div class="card-body">
+            <h5>Customers</h5>
+            <ul class="list-group mb-3">
+                {% for customer in customers %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ customer.name }} - {{ customer.email }}
+                    {% if not customer.is_blocked %}
+                    <form method="POST" action="{{ url_for('block_user', user_type='customer', user_id=customer.id) }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Block</button>
+                    </form>
+                    {% else %}
+                    <span class="badge bg-secondary">Blocked</span>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+
+            <h5>Service Professionals</h5>
+            <ul class="list-group">
+                {% for professional in professionals %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ professional.name }} - {{ professional.email }}
+                    {% if not professional.is_blocked %}
+                    <form method="POST" action="{{ url_for('block_user', user_type='professional', user_id=professional.id) }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Block</button>
+                    </form>
+                    {% else %}
+                    <span class="badge bg-secondary">Blocked</span>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block style %}
+<style>
+    h2 {
+        margin-bottom: 1rem;
+    } 
+    .card-header {
+        font-weight: bold;
+    }
+    .list-group-item form {
+        margin-left: auto;
+    }
+    table th, table td {
+        vertical-align: middle;
+    }
+    .btn-sm {
+        margin-right: 5px;
+    }
+</style>
+{% endblock %}
+
+
+
+
+

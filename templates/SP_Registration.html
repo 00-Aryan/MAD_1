@@ -16,11 +16,20 @@ Register - Household Services
         <input type="password" name="password" id='password' class="form-control" required>
     </label>
     <label for="name" class="form-label">Description :
-        <input type="text" name="Description" id="Description" class="form-control" required>
+        <input type="text" name="description" id="description" class="form-control" required>
     </label>
     <label for="name" class="form-label">Service type :
-        <input type="text" name="Description" id="Description" class="form-control" required>
+        <input type="text" name="service_type" id="service_type" class="form-control" required>
     </label>
+    <div class="mb-3">
+        <label for="category_id" class="form-label">Select Category</label>
+        <select id="category_id" name="category_id" class="form-select">
+            <option value="">--- Select Category ---</option>
+            {% for category in categories %}
+            <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
     <input type="submit" value="Register" class="btn btn-success">
 </form>
 {% endblock %}

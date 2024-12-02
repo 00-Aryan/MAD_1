@@ -1,8 +1,98 @@
+{# {% extends 'layout.html' %}
+
+{% block title %}
+Admin - Household Services
+{% endblock %}
+{% block content %}
+<h1>Admin Dashboard</h1>
+{% endblock %}
+{% block style %}
+    <style>
+        h1 {
+            text-align: center;
+        }
+    </style>
+{% endblock %} #}
+
 {% extends 'layout.html' %}
 
 {% block title %}
-Login - Household Services
+Admin - Household Services
 {% endblock %}
+
 {% block content %}
-<h1>admin</h1>
+<div class="container mt-5">
+    <h1 class="text-center">Admin Dashboard</h1>
+    <p class="text-center text-muted">Welcome to the Household Services Admin Panel</p>
+
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white text-center">
+                    <h5>Manage Users</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p>View, add, or edit Customer's details.</p>
+                    <a href="#" class="btn btn-primary">Go to Users</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-success text-white text-center">
+                    <h5>Manage Services</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p>View and manage and create services.</p>
+                    <a href="{{url_for('AdminServices')}}" class="btn btn-success">Go to Services</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-secondary text-white text-center">
+                    <h5>Manage Professionals</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p>View and manage Service Professionals.</p>
+                    <a href="{{url_for('AdminProfessional')}}" class="btn btn-secondary">Go to Professionals</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-warning text-white text-center">
+                    <h5>View Orders</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p>Monitor and manage customer orders.</p>
+                    <a href="#" class="btn btn-warning">View Orders</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block style %}
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    .card {
+        margin-bottom: 20px;
+    }
+    .card-header {
+        font-weight: bold;
+    }
+    .card-body p {
+        font-size: 1.1rem;
+    }
+    .btn {
+        width: 100%;
+    }
+</style>
 {% endblock %}

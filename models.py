@@ -41,11 +41,19 @@ class Customer(db.Model):
 
 class Professionals(db.Model):
     id = db.Column(db.Integer,primary_key=True)
-    Name = db.Column(db.String(84),nullable = False)
+    name = db.Column(db.String(84),nullable = False)
     Email_id = db.Column(db.String(32),unique=True,nullable = False)
     passhash = db.Column(db.String(128),nullable = False)
-    # Service_details = db.Column(db.string(128))
+    description = db.Column(db.String(128),nullable = True)
+    service_type = db.Column(db.String(128))
     category_id = db.Column(db.Integer,db.ForeignKey('category.id'),nullable=False)
+    approved = db.Column(db.Boolean, default=False)
+    
+    def set_password(self, password):
+        self.passhash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.passhash, password)
 
 class Cart(db.Model):
     id = db.Column(db.Integer,primary_key = True)
@@ -55,8 +63,8 @@ class Cart(db.Model):
 
 class Services(db.Model):
     id = db.Column(db.Integer,primary_key=True)
-    Price = db.Column(db.Float,nullable=False)
-    Service_name = db.Column(db.String(64),nullable = False)
+    base_price = db.Column(db.Float,nullable=False)
+    service_name = db.Column(db.String(64),nullable = False)
     # Image = db.Column(db.String,nullable=True)
     description = db.Column(db.String(32),nullable= False)
     Time_Required = db.Column(db.String(32),nullable= False)
@@ -79,6 +87,9 @@ class Orders(db.Model):
 
 with app.app_context():
     db.create_all()
+    
+    
+    
     
     # create admin if admin does not exist 
     existing_admin = Customer.query.filter_by(admin=True).first()
