@@ -7,50 +7,65 @@
         <ul class="navbar-nav ms-auto">
             {# render auth links if not logged in, else normal links  #}
             {% if user %}
-                {% if user.admin %}
-                    <!-- Admin Links -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('summary') }}">Summary</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('profile') }}">Profile</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('Logout') }}">Logout</a>
-                    </li>
-                {% else %}
-                    <!-- Regular User Links -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('profile') }}">Profile</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url_for('cart') }}" class="nav-link">Cart</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url_for('orders') }}" class="nav-link">Orders</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('Logout') }}">Logout</a>
-                    </li>
-                {% endif %}
-            {% else %}
-                <!-- Guest Links -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="registerDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Register
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="registerDropdown">
-                        <li><a class="dropdown-item" href="{{ url_for('CS_register') }}">Register as Customer</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('SP_register') }}">Register as Service Professional</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('Login') }}">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('Contact') }}">Contact</a>
-                </li>
-            {% endif %}
+    {% if user.admin %}
+        <!-- Admin Links -->
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('summary') }}">Summary</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('profile') }}">Profile</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('Logout') }}">Logout</a>
+        </li>
+    {% elif user.role == 'service_professional' %}
+        <!-- Service Professional Links -->
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('SP_Home') }}">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('prof_dashboard') }}">Dashboard</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('sp_profile') }}">Profile</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('Logout') }}">Logout</a>
+        </li>
+    {% elif user.role == 'customer' %}
+        <!-- Customer Links -->
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('profile') }}">Profile</a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ url_for('cart') }}" class="nav-link">Cart</a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ url_for('orders') }}" class="nav-link">Orders</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('Logout') }}">Logout</a>
+        </li>
+    {% endif %}
+{% else %}
+    <!-- Guest Links -->
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="registerDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Register
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="registerDropdown">
+            <li><a class="dropdown-item" href="{{ url_for('CS_register') }}">Register as Customer</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('post_sp_register') }}">Register as Service Professional</a></li>
+        </ul>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('Login') }}">Login</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('Contact') }}">Contact</a>
+    </li>
+{% endif %}
+
         </ul>
     </div>
 </nav>

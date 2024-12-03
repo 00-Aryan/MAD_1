@@ -22,6 +22,7 @@ def auth_required(fnc):
 def home():
     user = Customer.query.get(session['user_id'])
     prof = Professionals.query.get(session['prof_id']) #session.geT IS to avoid keyerror
+    print(f"Session Data: {session}")
     if prof :
         return render_template('professional_home.html', prof = prof)
     if user and user.admin :
@@ -63,6 +64,17 @@ def post_profile():
     db.session.commit()
     flash('Profile updated successfully','success')
     return redirect(url_for('profile'))
+
+@app.route('/sp/profile')
+@auth_required
+def sp_profile():
+    user_id = session.get('user_id')
+    user = Professionals.query.get(user_id)  # Fetch the professional user
+    if not user:
+        flash('Service Professional not found', 'danger')
+        return redirect(url_for('home'))  # Redirect to home if the professional is not found
+    return render_template('sp_profile.html', user=user)
+
 # @app.route("/services")
 # def services():
 #     return render_template('Services Page')
@@ -100,7 +112,7 @@ def Login():
         email = request.form.get('email')  # Email from login form
         password = request.form.get('password')  # Password from login form
 
-        # Check for customer
+        # Check for customer first
         user = Customer.query.filter_by(Email_id=email).first()
 
         # If not a customer, check for service professional
@@ -114,27 +126,31 @@ def Login():
             # Redirect based on user role
             if isinstance(user, Customer):
                 if user.admin:  # Admin role
-                    return redirect(url_for('Admin'))
+                    return redirect(url_for('Admin'))  # Admin dashboard
                 else:  # Regular customer
-                    return redirect(url_for('CS_Home'))
+                    return redirect(url_for('CS_Home'))  # Customer homepage
+            
             elif isinstance(user, Professionals):
-                # Set prof_id for professionals
+                # Set professional session details (optional, if needed for other functionality)
                 session['prof_id'] = user.id
 
                 # Redirect based on professional status
                 if user.status == "approved":
-                    return redirect(url_for('SP_Home'))
+                    return redirect(url_for('SP_Home'))  # Service professional homepage
                 elif user.status == "pending":
                     flash("Your account is pending approval.", "warning")
+                    return redirect(url_for('Login'))  # Stay on login page
                 elif user.status == "rejected":
                     flash("Your account has been rejected. Please contact support.", "danger")
-                return redirect(url_for('Login'))
+                    return redirect(url_for('Login'))  # Stay on login page
         else:
             flash("Invalid email or password.", "danger")
-            return redirect(url_for('Login'))
+            return redirect(url_for('Login'))  # Invalid credentials, stay on login page
 
     # Render login page for GET requests
     return render_template('login.html')
+
+
 
 
 
@@ -170,16 +186,56 @@ def post_register_customer():
     return redirect(url_for('Login'))  # Redirect to a success or login page
 
 # Route for service provider registration form
-@app.route('/register/SP', methods=['GET'])
-def SP_register():
-    categories = Category.query.all()
-    return render_template('SP_Registration.html')
+# @app.route('/register/SP', methods=['GET'])
+# def SP_register():
+#     categories = Category.query.all()
+#     return render_template('SP_Registration.html', category=categories)
 
 # Service provider home route
-@app.route('/register/SP', methods=[ 'POST'])
+# @app.route('/register/SP', methods=[ 'POST'])
+# def post_sp_register():
+#     if request.method == 'POST':
+#         # Retrieve form data
+        # username = request.form.get('email')
+        # password = request.form.get('password')
+        # name = request.form.get('name')
+        # description = request.form.get('description')
+        # service_type = request.form.get('service_type')
+        # category_id = request.form.get('category_id')
+        # status = request.form.get('status')
+
+#         # Input validation
+#         if not username or not password or not name:
+#             flash("All fields are required", "danger")
+#             return redirect(url_for('SP_register'))
+
+#         # Create a new Professional instance
+#         professional = Professionals(
+            # Email_id=username,
+            # name=name,
+            # description=description,
+            # service_type=service_type,
+            # category_id=category_id,
+            # status= status 
+#         )
+#         professional.set_password(password)  # Assuming set_password hashes the password
+
+#         # Save to the database
+#         db.session.add(professional)
+#         db.session.commit()
+
+#         # Success message
+#         flash('Registration successful! Pending admin approval.', 'success')
+#         return redirect(url_for('home'))
+
+#     # If GET request, render the registration form with categories
+#     categories = Category.query.all()
+#     return render_template('register_service_pro.html', categories=categories)
+
+@app.route('/register/SP', methods=['GET', 'POST'])
 def post_sp_register():
     if request.method == 'POST':
-        # Retrieve form data
+        # Process form data
         username = request.form.get('email')
         password = request.form.get('password')
         name = request.form.get('name')
@@ -187,14 +243,9 @@ def post_sp_register():
         service_type = request.form.get('service_type')
         category_id = request.form.get('category_id')
         status = request.form.get('status')
-
-        # Input validation
-        if not username or not password or not name:
-            flash("All fields are required", "danger")
-            return redirect(url_for('SP_register'))
-
-        # Create a new Professional instance
-        professional = Professionals(
+        
+        # Create a new professional
+        new_professional = Professionals(
             Email_id=username,
             name=name,
             description=description,
@@ -202,19 +253,18 @@ def post_sp_register():
             category_id=category_id,
             status= status 
         )
-        professional.set_password(password)  # Assuming set_password hashes the password
-
-        # Save to the database
-        db.session.add(professional)
+        new_professional.set_password(password)
+        db.session.add(new_professional)
         db.session.commit()
-
-        # Success message
-        flash('Registration successful! Pending admin approval.', 'success')
-        return redirect(url_for('home'))
-
-    # If GET request, render the registration form with categories
+        flash("Service professional registered successfully, awaiting approval.", "success")
+        return redirect(url_for('Login'))  # Redirect after registration
+        
+    # GET request, fetch categories from the database
     categories = Category.query.all()
-    return render_template('register_service_pro.html', categories=categories)
+    
+    print(f"Categories fetched: {categories}")
+    return render_template('SP_Registration.html', categories=categories)
+
 
 @app.route('/contact')
 def Contact():
@@ -342,6 +392,17 @@ def SP_Home():
     user = Professionals.query.get(session.get('prof_id'))
     return render_template('professional_home.html', user=user)
 
+@app.route('/professional/dashboard')
+@auth_required
+def prof_dashboard():
+    user = Professionals.query.get(session.get('prof_id'))
+    return render_template('professional_dashboard.html', user=user)
+
+# @app.route('category/add')
+# @auth_required
+# def add_category():
+
+
 
 # @app.route('/admin/services')
 # @auth_required
@@ -365,10 +426,9 @@ def edit_service_page():
 
 @app.route('/logout')
 def Logout():
-    # Log out logic here
-    session.pop('user_id', None)
-    session.pop('prof_id', None)
-    return redirect(url_for('Login')) 
+    session.clear()
+    flash("You have been logged out.", "info")
+    return redirect(url_for('Login'))
 
 @app.route('/cart')
 @auth_required

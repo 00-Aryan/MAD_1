@@ -1,0 +1,174 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    Service Professional Profile
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <h1>Service Professional Profile</h1>
+    <h2>{{ user.name }}</h2>
+    <div class="edit-profile">
+        <h3>Edit Profile</h3>
+        <form method="post">
+            <!-- Name -->
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" name="name" id="name" required value="{{ user.name }}" class="form-control">
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <label for="email">Email ID</label>
+                <input type="email" name="email" id="email" required value="{{ user.Email_id }}" class="form-control">
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label for="password">Change Password</label>
+                <input type="password" name="password" id="password" placeholder="Enter new password" class="form-control">
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea name="description" id="description" rows="4" placeholder="Describe your expertise" class="form-control">{{ user.description }}</textarea>
+            </div>
+
+            <!-- Service Type -->
+            <div class="form-group">
+                <label for="service_type">Service Type</label>
+                <input type="text" name="service_type" id="service_type" required value="{{ user.service_type }}" class="form-control">
+            </div>
+
+            <!-- Category Selection -->
+            <div class="form-group">
+                <label for="category">Select Category</label>
+                <select name="category" id="category" class="form-control">
+                    <option value="" disabled selected>Select a category</option>
+                    <option value="plumbing" {% if user.category == 'plumbing' %}selected{% endif %}>Plumbing</option>
+                    <option value="electrical" {% if user.category == 'electrical' %}selected{% endif %}>Electrical</option>
+                    <option value="cleaning" {% if user.category == 'cleaning' %}selected{% endif %}>Cleaning</option>
+                    <option value="painting" {% if user.category == 'painting' %}selected{% endif %}>Painting</option>
+                    <option value="others" {% if user.category == 'others' %}selected{% endif %}>Others</option>
+                </select>
+            </div>
+
+            <!-- Submit and Logout -->
+            <div class="form-group actions">
+                <button type="submit" class="btn btn-success">Save Changes</button>
+                <a href="{{ url_for('Logout') }}" class="btn btn-primary">Logout</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block style %}
+<style>
+    /* Container Styling */
+    .profile-container {
+        max-width: 700px;
+        margin: 50px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff;
+        text-align: center;
+    }
+
+    /* Headings */
+    h1 {
+        font-size: 2rem;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        color: #555;
+        margin-bottom: 30px;
+    }
+
+    h3 {
+        font-size: 1.2rem;
+        color: #444;
+        margin-bottom: 20px;
+    }
+
+    /* Form Group Styling */
+    .form-group {
+        margin-bottom: 15px;
+        text-align: left;
+    }
+
+    label {
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: block;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    input, textarea, select {
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 100%;
+        box-sizing: border-box;
+        resize: vertical;
+    }
+
+    input:focus, textarea:focus, select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+        outline: none;
+    }
+
+    textarea {
+        min-height: 100px;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 10px 15px;
+        font-size: 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+        border: none;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 15px;
+        }
+
+        input, textarea, select {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+{% endblock %}

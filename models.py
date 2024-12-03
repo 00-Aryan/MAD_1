@@ -16,6 +16,8 @@ class Customer(db.Model):
     address = db.Column(db.String(32))
     Pin_Code = db.Column(db.String(8))
     admin = db.Column(db.Boolean , default=False, nullable=False)
+    role = db.Column(db.String(16), nullable=False, default='customer')
+    
 
 
 
@@ -48,6 +50,10 @@ class Professionals(db.Model):
     service_type = db.Column(db.String(128))
     category_id = db.Column(db.Integer,db.ForeignKey('category.id'),nullable=False)
     status = db.Column(db.String(16), nullable=False, default='pending')
+    role = db.Column(db.String(16), nullable=False, default='service_professional')
+    category = db.relationship('Category', backref='professionals', lazy=True)
+    
+    
     
     def set_password(self, password):
         self.passhash = generate_password_hash(password)
@@ -74,10 +80,12 @@ class Services(db.Model):
 class Category(db.Model):
     id = db.Column(db.Integer,primary_key=True)
     name = db.Column(db.String(32),nullable =False)
-    # List_of_prof= db.relationship('Services',backref='category',lazy=True)
-     # Removed List_of_prof, as backref will automatically create 'services' in Services model
 
+categories = ['Plumbing', 'Electrical', 'Cleaning', 'Gardening', 'Carpentry']
 
+# Check if categories already exist to avoid duplicates
+
+    
 class Orders(db.Model):
     id = db.Column(db.Integer,primary_key=True)
     professional_id = db.Column(db.Integer,db.ForeignKey("customer.id"),nullable= False)
@@ -89,7 +97,15 @@ with app.app_context():
     db.create_all()
     
     
-    
+    existing_categories = {category.name for category in Category.query.all()}
+
+    for category_name in categories:
+        if category_name not in existing_categories:
+            new_category = Category(name=category_name)
+            db.session.add(new_category)
+
+    db.session.commit()
+    print("Categories seeded successfully.")
     
     # create admin if admin does not exist 
     existing_admin = Customer.query.filter_by(admin=True).first()
@@ -99,6 +115,7 @@ with app.app_context():
             Email_id='admin@123.com',  # Admin email
             passhash=password_hash,
             name='Admin',
+            role ='Admin',
             admin=True
         )
         db.session.add(admin_user)

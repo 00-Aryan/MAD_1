@@ -23,10 +23,10 @@ Register - Household Services
     </label>
     <div class="mb-3">
         <label for="category_id" class="form-label">Select Category</label>
-        <select id="category_id" name="category_id" class="form-select">
+        <select id="category_id" name="category_id" class="form-select" required>
             <option value="">--- Select Category ---</option>
             {% for category in categories %}
-            <option value="{{ category.id }}">{{ category.name }}</option>
+                <option value="{{ category.id }}">{{ category.name }}</option>
             {% endfor %}
         </select>
     </div>
