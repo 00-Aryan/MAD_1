@@ -41,6 +41,13 @@
                 <input type="text" name="service_type" id="service_type" required value="{{ user.service_type }}" class="form-control">
             </div>
 
+            {% if user.document %}
+    <p>Document: <a href="{{ url_for('static', filename='uploads/' + user.document) }}" target="_blank">{{ user.document }}</a></p>
+{% else %}
+    <p>No document uploaded.</p>
+{% endif %}
+
+
             <!-- Category Selection -->
             <div class="form-group">
                 <label for="category">Select Category</label>
@@ -53,6 +60,7 @@
                     <option value="others" {% if user.category == 'others' %}selected{% endif %}>Others</option>
                 </select>
             </div>
+            <p>Account created on: {{ user.get_date_created() }}</p>  
 
             <!-- Submit and Logout -->
             <div class="form-group actions">

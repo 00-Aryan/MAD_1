@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from app import app
+import os
 db = SQLAlchemy(app) 
 from werkzeug.security import generate_password_hash , check_password_hash
 from datetime import datetime
@@ -48,11 +49,22 @@ class Professionals(db.Model):
     passhash = db.Column(db.String(128),nullable = False)
     description = db.Column(db.String(128),nullable = True)
     service_type = db.Column(db.String(128))
+    address = db.Column(db.String(32))
+    Pin_Code = db.Column(db.String(8))
+    experience = db.Column(db.String(8))
     category_id = db.Column(db.Integer,db.ForeignKey('category.id'),nullable=False)
     status = db.Column(db.String(16), nullable=False, default='pending')
     role = db.Column(db.String(16), nullable=False, default='service_professional')
     category = db.relationship('Category', backref='professionals', lazy=True)
     
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    document = db.Column(db.String(256), nullable=True)  # New column to store document path
+
+    # Optional: A method to get the file path or handle the document
+    def get_document_url(self):
+        return os.path.join('uploads', self.document) if self.document else None
+    def get_date_created(self):
+        return self.date_created.strftime('%Y-%m-%d %H:%M:%S')
     
     
     def set_password(self, password):

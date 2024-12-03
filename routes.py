@@ -1,9 +1,12 @@
 from functools import wraps
+import os
 from flask import Flask , render_template,redirect,url_for,request,flash ,session
 
 from models import db, Customer, Professionals, Orders, Cart,Category , Services
 
 from app import app
+
+UPLOAD_FOLDER = 'uploads'
 
 def auth_required(fnc):
     @wraps(fnc)  # Preserve the original function's metadata
@@ -22,10 +25,10 @@ def auth_required(fnc):
 def home():
     user = Customer.query.get(session['user_id'])
     prof = Professionals.query.get(session['prof_id']) #session.geT IS to avoid keyerror
-    print(f"Session Data: {session}")
+    # print(f"Session Data: {session}")
     if prof :
         return render_template('professional_home.html', prof = prof)
-    if user and user.admin :
+    elif user and user.admin :
         return redirect(url_for('Admin'))
     else:
         return render_template('customer_home.html', user=user)
@@ -243,6 +246,17 @@ def post_sp_register():
         service_type = request.form.get('service_type')
         category_id = request.form.get('category_id')
         status = request.form.get('status')
+        experience = request.form.get('experience')
+        address = request.form.get('address')
+        pin_code = request.form.get('Pin_Code')
+        
+        
+        document = request.files.get('document')
+        document_filename = None
+        
+        if document and document.filename != '':  # Check if file is uploaded
+            document_filename = document.filename
+            document.save(os.path.join(app.config['UPLOAD_FOLDER'], document_filename))
         
         # Create a new professional
         new_professional = Professionals(
@@ -251,7 +265,12 @@ def post_sp_register():
             description=description,
             service_type=service_type,
             category_id=category_id,
-            status= status 
+            status= status,
+            experience=experience,
+            address=address,
+            Pin_Code=pin_code,
+            document=document_filename,  # Store the filename in the database
+        
         )
         new_professional.set_password(password)
         db.session.add(new_professional)
@@ -262,7 +281,7 @@ def post_sp_register():
     # GET request, fetch categories from the database
     categories = Category.query.all()
     
-    print(f"Categories fetched: {categories}")
+    # print(f"Categories fetched: {categories}")
     return render_template('SP_Registration.html', categories=categories)
 
 

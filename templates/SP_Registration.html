@@ -5,7 +5,7 @@ Register - Household Services
 {% endblock %}
 {% block content %}
 <h1>Register</h1>
-<form method="post" class="form">
+<form method="post" class="form" enctype="multipart/form-data">
     <label for="name" class="form-label">Name :
         <input type="text" name="name" id="name" class="form-control" required>
     </label>
@@ -18,11 +18,20 @@ Register - Household Services
     <label for="name" class="form-label">Description :
         <input type="text" name="description" id="description" class="form-control" required>
     </label>
+    <label for="name" class="form-label">Experience:
+        <input type="text" name="experience" id="experience" class="form-control" required>
+    </label>
+    <label for="name" class="form-label">Address :
+        <input type="Address" name="address" id="Description" class="form-control">
+    </label>
+    <label for="name" class="form-label">Pin_Code :
+        <input type="text" name="Pin_Code" id="Description" class="form-control">
+    </label>
     <label for="name" class="form-label">Service type :
         <input type="text" name="service_type" id="service_type" class="form-control" required>
     </label>
     <div class="mb-3">
-        <label for="category_id" class="form-label">Select Category</label>
+        <label for="category_id" class="form-label">Service Name: </label>
         <select id="category_id" name="category_id" class="form-select" required>
             <option value="">--- Select Category ---</option>
             {% for category in categories %}
@@ -30,6 +39,12 @@ Register - Household Services
             {% endfor %}
         </select>
     </div>
+        <div class="form-group mb-3">
+            <label for="document">Upload Document</label>
+            <input type="file" class="form-control" id="document" name="document">
+        </div>
+        <button type="submit" class="btn btn-primary mb-3">Upload Document</button>
+   
     <input type="submit" value="Register" class="btn btn-success">
 </form>
 {% endblock %}
