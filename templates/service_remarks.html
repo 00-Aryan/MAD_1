@@ -1,0 +1,149 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Remarks - Household Services
+{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Service Remarks</h2>
+
+    <div class="service-info">
+        <div>
+            <span class="label">Service Name:</span>
+            <span class="input-field">{{ service_name }}</span>
+        </div>
+
+        <div>
+            <span class="label">Service Remarks:</span>
+            <span class="input-field">{{ service_remarks }}</span>
+        </div>
+
+        <div>
+            <span class="label">Request ID:</span>
+            <span class="input-field">{{ request_id }}</span>
+        </div>
+
+        <div>
+            <span class="label">Description:</span>
+            <span class="input-field">{{ description }}</span>
+        </div>
+
+        <div>
+            <span class="label">Date:</span>
+            <span class="input-field">{{ request_date }}</span>
+        </div>
+
+        <div>
+            <span class="label">Professional ID:</span>
+            <span class="input-field">{{ professional_id }}</span>
+        </div>
+
+        <div>
+            <span class="label">Professional Name:</span>
+            <span class="input-field">{{ professional_name }}</span>
+        </div>
+
+        <div>
+            <span class="label">Contact No.:</span>
+            <span class="input-field">{{ contact_no }}</span>
+        </div>
+
+        <div>
+            <span class="label">Service Rating:</span>
+            <span class="input-field">{{ service_rating }}</span>
+        </div>
+
+        <div>
+            <span class="label">Remarks (if any):</span>
+            <textarea class="textarea-field">{{ remarks }}</textarea>
+        </div>
+
+    </div>
+
+    <div class="button-container">
+        <button type="submit">Submit</button>
+        <button type="button" class="close" onclick="window.close();">Close</button>
+    </div>
+</div>
+{% endblock %}
+{% block style %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+    }
+
+    .container {
+        width: 80%;
+        max-width: 800px;
+        margin: 50px auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .service-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .service-info div {
+        margin-bottom: 10px;
+    }
+
+    .label {
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    .input-field {
+        padding: 8px;
+        font-size: 16px;
+        width: 100%;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+
+    .textarea-field {
+        padding: 8px;
+        font-size: 16px;
+        width: 100%;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        height: 100px;
+        resize: vertical;
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+
+    button {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    button.close {
+        background-color: #f44336;
+    }
+
+    button:hover {
+        opacity: 0.8;
+    }
+
+</style>
+{% endblock %} 

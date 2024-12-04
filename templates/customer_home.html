@@ -3,6 +3,7 @@
 {% block title %}
 Login - Household Services
 {% endblock %}
+
 {% block content %}
 <div class="hero-section text-center">
     <div>
@@ -22,7 +23,6 @@ Login - Household Services
                     <div class="card-body">
                         <h5 class="card-title">Cleaning Services</h5>
                         <p class="card-text">Keep your home sparkling clean with our professional cleaning services.</p>
-                        <a href="#" class="btn btn-primary">Book Now</a>
                     </div>
                 </div>
             </div>
@@ -32,7 +32,6 @@ Login - Household Services
                     <div class="card-body">
                         <h5 class="card-title">AC Repair</h5>
                         <p class="card-text">Expert plumbers for all your repairs and installations.</p>
-                        <a href="#" class="btn btn-primary">Book Now</a>
                     </div>
                 </div>
             </div>
@@ -42,7 +41,6 @@ Login - Household Services
                     <div class="card-body">
                         <h5 class="card-title">Electrician</h5>
                         <p class="card-text">Certified electricians for safe and reliable services.</p>
-                        <a href="#" class="btn btn-primary">Book Now</a>
                     </div>
                 </div>
             </div>
@@ -52,13 +50,16 @@ Login - Household Services
                     <div class="card-body">
                         <h5 class="card-title">Saloon</h5>
                         <p class="card-text">Relax, Experience the ultimate care and style.</p>
-                        <a href="#" class="btn btn-primary">Book Now</a>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Book Now Button -->
+        <div class="text-center mt-5">
+            <a href="{{ url_for('book_services') }}" class="btn btn-primary btn-lg">Book Now</a>
+        </div>
     </div>
 </section>
-
 
 {% endblock %}

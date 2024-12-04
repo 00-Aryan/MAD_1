@@ -5,53 +5,119 @@ Admin - Manage Professionals
 {% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1 class="text-center mb-4">Manage Service Professionals</h1>
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h4>Service Professionals</h4>
+    </div>
+    <div class="card-body">
+        {% if professionals %}
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Experience</th>
+                    <th>Service</th>
+                    <th>Status</th> 
+                </tr>
+            </thead>
+            <tbody>
+                {% for professional in professionals %}
+                <tr>
+                    <td>{{ professional.id }}</td>
+                    <td>{{ professional.name }}</td>
+                    <td>{{ professional.experience }} years</td>
+                    <td>{{ professional.service_type }}</td>
+                    <td>
+                        {% if professional.status == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                        {% elif professional.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No professionals available.</p>
+        {% endif %}
+    </div>
+</div>
 
-    <!-- Professionals Table -->
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h4>Service Professionals</h4>
+    <!-- Pending Approvals Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h4>Pending Approvals</h4>
         </div>
         <div class="card-body">
-            {% if professionals %}
-            <table class="table table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Experience</th>
-                        <th>Service</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for professional in professionals %}
-                    <tr>
-                        <td>{{ professional.id }}</td>
-                        <td>{{ professional.name }}</td>
-                        <td>{{ professional.experience }} years</td>
-                        <td>{{ professional.service_name }}</td>
-                        <td>
-                            <form method="POST" action="{{ url_for('approve_professional', professional_id=professional.id) }}" style="display:inline;">
-                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                            </form>
-                            <form method="POST" action="{{ url_for('reject_professional', professional_id=professional.id) }}" style="display:inline;">
-                                <button type="submit" class="btn btn-warning btn-sm">Reject</button>
-                            </form>
-                            <form method="POST" action="{{ url_for('delete_professional', professional_id=professional.id) }}" style="display:inline;">
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            {% set pending_professionals = professionals | selectattr('status', 'equalto', 'pending') | list %}
+            {% if pending_professionals %}
+            <ul class="list-group">
+                {% for professional in pending_professionals %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ professional.name }}</strong> - {{ professional.email }}
+                        {% if professional.document %}
+                            <!-- Display document link if document exists -->
+                            <br>
+                            <a href="{{ url_for('uploads', filename=professional.document) }}" target="_blank" class="text-primary">View Document</a>
+                        {% else %}
+                            <span class="text-muted">No document uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex">  <!-- buttons are aligned side by side -->
+                        <form method="POST" action="{{ url_for('approve_professional', professional_id=professional.id) }}">
+                            <button type="submit" class="btn btn-success btn-sm mr-2">Approve</button> <!-- Added margin-right for spacing -->
+                        </form>
+                        <form method="POST" action="{{ url_for('reject_professional', professional_id=professional.id) }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('delete_professional', professional_id=professional.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
             {% else %}
-            <p class="text-muted">No professionals available.</p>
+            <p class="text-muted">No pending approvals.</p>
             {% endif %}
         </div>
     </div>
+    
+
+
+<!-- Block user  -->
+
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h4>Block Users</h4>
+        </div>
+        <div class="card-body">
+    <h5>Service Professionals</h5>
+    <ul class="list-group">
+        {% for professional in professionals %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ professional.name }}</strong> - <span class="text-muted">{{ professional.email }}</span>
+            </div>
+            <div>
+                {% if not professional.is_blocked %}
+                <form method="POST" action="{{ url_for('block_user', user_type='professional', user_id=professional.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger btn-sm">Block</button>
+                </form>
+                {% else %}
+                <span class="badge bg-secondary">Blocked</span>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+</div>
 </div>
 {% endblock %}
 

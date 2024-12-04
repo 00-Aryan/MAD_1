@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Edit Service
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Edit Service</h1>
+    <form method="POST" action="{{ url_for('edit_service', service_id=service.id) }}">
+        <div class="mb-3">
+            <label for="name" class="form-label">Service Name</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ service.name }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="base_price" class="form-label">Base Price</label>
+            <input type="number" class="form-control" id="base_price" name="base_price" value="{{ service.base_price }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3" required>{{ service.description }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="category_id" class="form-label">Category</label>
+            <select class="form-select" id="category_id" name="category_id" required>
+                {% for category in categories %}
+                <option value="{{ category.id }}" {% if category.id == service.category_id %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Service</button>
+    </form>
+</div>
+{% endblock %}

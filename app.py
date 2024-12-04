@@ -4,7 +4,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-import os
 
 import config
 

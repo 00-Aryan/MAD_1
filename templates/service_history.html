@@ -1,0 +1,44 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Service History
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Your Service History</h1>
+
+    {% if service_requests %}
+    {% for service_request in service_requests %}
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h4>Service: {{ service_request.service_name }}</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Request ID:</strong> {{ service_request.id }}</p>
+            <p><strong>Status:</strong> {{ service_request.status }}</p>
+            <p><strong>Service Date:</strong> {{ service_request.date_requested }}</p>
+            <p><strong>Description:</strong> {{ service_request.description }}</p>
+
+            <form method="POST" action="{{ url_for('view_service_details', service_request_id=service_request.id) }}">
+                <button type="submit" class="btn btn-primary btn-sm">View Details</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="text-muted">You have no service history.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block style %}
+<style>
+    .card-header {
+        font-weight: bold;
+    }
+    .btn-sm {
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Book Services
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Book Services</h1>
+
+    {% for category in categories %}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4>{{ category.name }}</h4>
+        </div>
+        <div class="card-body">
+            {% if category.services %}
+            <div class="row">
+                {% for service in category.services %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{ service.name }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Base Price:</strong> ${{ service.base_price }}</p>
+                            <p>{{ service.description }}</p>
+                            <form method="POST" action="{{ url_for('book_services') }}">
+                                <input type="hidden" name="service_id" value="{{ service.id }}">
+                                <button type="submit" class="btn btn-success btn-sm">Book Now</button>
+                            </form>                            
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">No services available under this category.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block style %}
+<style>
+    .card-header {
+        font-weight: bold;
+    }
+    .btn-sm {
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}

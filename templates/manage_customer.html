@@ -1,0 +1,95 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Manage Customers
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Manage Customers</h1>
+
+    <!-- Add Customer Form -->
+    <h3 class="mb-4">Add Customer</h3>
+    <form method="POST" action="{{ url_for('manage_customers') }}" class="mb-4">
+        <div class="row mb-3">
+            <div class="col">
+                <input type="text" class="form-control" name="name" placeholder="Name" required>
+            </div>
+            <div class="col">
+                <input type="email" class="form-control" name="email" placeholder="Email" required>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                <input type="text" class="form-control" name="address" placeholder="Address">
+            </div>
+            <div class="col">
+                <input type="text" class="form-control" name="pin_code" placeholder="Pin Code">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                <input type="password" class="form-control" name="password" placeholder="Password" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Customer</button>
+    </form>
+
+    <!-- Customers Table -->
+    <h3>Customer List</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Address</th>
+                <th>Pin Code</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td>{{ customer.id }}</td>
+                <td>{{ customer.name }}</td>
+                <td>{{ customer.Email_id }}</td>
+                <td>{{ customer.address }}</td>
+                <td>{{ customer.Pin_Code }}</td>
+                <td>
+                    <!-- Edit button that redirects to the edit page -->
+                    <a href="{{ url_for('edit_customer', customer_id=customer.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+             
+    </table>
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h4>Block Users</h4>
+        </div>
+        <div class="card-body">
+            <h5>Customers</h5>
+            <ul class="list-group mb-3">
+                {% for customer in customers %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ customer.name }}</strong> - <span class="text-muted">{{ customer.email }}</span>
+                    </div>
+                    <div>
+                        {% if not customer.is_blocked %}
+                        <form method="POST" action="{{ url_for('block_user', user_type='customer', user_id=customer.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-sm">Block</button>
+                        </form>
+                        {% else %}
+                        <span class="badge bg-secondary">Blocked</span>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

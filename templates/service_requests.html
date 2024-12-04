@@ -1,0 +1,52 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Admin - Service Requests
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Service Requests</h1>
+
+    <!-- Service Requests Table -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4>Service Requests</h4>
+        </div>
+        <div class="card-body">
+            {% if service_requests %}
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Assigned Professional</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in service_requests %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>{{ request.customer.name }}</td>
+                        <td>{{ request.request_description }}</td>
+                        <td>{{ request.status }}</td>
+                        <td>
+                            {% if request.professional %}
+                                {{ request.professional.name }}
+                            {% else %}
+                                Not Assigned
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">No service requests available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

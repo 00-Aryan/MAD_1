@@ -1,12 +1,12 @@
 from functools import wraps
 import os
-from flask import Flask , render_template,redirect,url_for,request,flash ,session
+from flask import Flask , render_template,redirect,url_for,request,flash ,session , send_from_directory
 
-from models import db, Customer, Professionals, Orders, Cart,Category , Services
+from models import db, Customer, Professional, Orders, Cart,Category , Service , ServiceRequest
 
 from app import app
 
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = app.config['UPLOAD_FOLDER']
 
 def auth_required(fnc):
     @wraps(fnc)  # Preserve the original function's metadata
@@ -20,11 +20,17 @@ def auth_required(fnc):
         return redirect(url_for('Login'))
     return inner
 
+@app.route('/uploads/<filename>')
+def uploads(filename):
+    upload_folder = os.path.join(app.root_path, 'uploads')  # Adjust the folder path as per your setup
+    print(os.path.join(app.root_path, 'uploads'))
+    return send_from_directory(upload_folder, filename)
+
 @app.route('/')
 @auth_required
 def home():
     user = Customer.query.get(session['user_id'])
-    prof = Professionals.query.get(session['prof_id']) #session.geT IS to avoid keyerror
+    prof = Professional.query.get(session.get('prof_id')) #session.geT IS to avoid keyerror
     # print(f"Session Data: {session}")
     if prof :
         return render_template('professional_home.html', prof = prof)
@@ -72,7 +78,7 @@ def post_profile():
 @auth_required
 def sp_profile():
     user_id = session.get('user_id')
-    user = Professionals.query.get(user_id)  # Fetch the professional user
+    user = Professional.query.get(user_id)  # Fetch the professional user
     if not user:
         flash('Service Professional not found', 'danger')
         return redirect(url_for('home'))  # Redirect to home if the professional is not found
@@ -120,7 +126,7 @@ def Login():
 
         # If not a customer, check for service professional
         if not user:
-            user = Professionals.query.filter_by(Email_id=email).first()
+            user = Professional.query.filter_by(Email_id=email).first()
 
         # Validate user and password
         if user and user.check_password(password):  # Ensure `check_password` is implemented
@@ -133,7 +139,7 @@ def Login():
                 else:  # Regular customer
                     return redirect(url_for('CS_Home'))  # Customer homepage
             
-            elif isinstance(user, Professionals):
+            elif isinstance(user, Professional):
                 # Set professional session details (optional, if needed for other functionality)
                 session['prof_id'] = user.id
 
@@ -257,9 +263,10 @@ def post_sp_register():
         if document and document.filename != '':  # Check if file is uploaded
             document_filename = document.filename
             document.save(os.path.join(app.config['UPLOAD_FOLDER'], document_filename))
+            
         
         # Create a new professional
-        new_professional = Professionals(
+        new_professional = Professional(
             Email_id=username,
             name=name,
             description=description,
@@ -285,6 +292,7 @@ def post_sp_register():
     return render_template('SP_Registration.html', categories=categories)
 
 
+
 @app.route('/contact')
 def Contact():
     return render_template('contact.html')
@@ -295,11 +303,13 @@ def Contact():
 
 @app.route('/admin/professionals/approve/<int:professional_id>', methods=['POST'])
 def approve_professional(professional_id):
-    professional = Professionals.query.get(professional_id)
+    professional = Professional.query.get(professional_id)
+    professionals = Professional.query.all()
     professional.status = 'approved'
     db.session.commit()
     flash(f"{professional.name} has been approved.", "success")
-    return redirect(url_for('Admin'))
+    
+    return redirect(url_for('AdminProfessional'))
 
 @app.route('/admin/services/block_user/<user_type>/<int:user_id>', methods=['POST'])
 def block_user(user_type, user_id):
@@ -307,8 +317,9 @@ def block_user(user_type, user_id):
 
 @app.route('/admin/professionals/reject/<int:professional_id>', methods=['POST'])
 def reject_professional(professional_id):
+    professionals = Professional.query.all()
     # Get the professional by ID
-    professional = Professionals.query.get_or_404(professional_id)
+    professional = Professional.query.get_or_404(professional_id)
 
     # Update 'rejected'
     professional.status = 'rejected'
@@ -319,7 +330,7 @@ def reject_professional(professional_id):
     # Flash a success message
     flash(f"{professional.name} has been rejected.", "danger")
 
-    return redirect(url_for('Admin'))
+    return redirect(url_for('AdminProfessional'),professional = professional)
 
 
 @app.route('/admin')
@@ -328,37 +339,46 @@ def Admin():
     user = Customer.query.get(session['user_id'])
     return render_template('admin.html', user = user)
 
+
 @app.route('/admin/services', methods=['GET', 'POST'])
 @auth_required
 def AdminServices():
     user = Customer.query.get(session['user_id'])
     if request.method == 'POST':
         # Retrieve form data
-        service_name = request.form.get('service_name')
+        name = request.form.get('name')
         base_price = request.form.get('base_price')
-        description = request.form.get('Description')
+        description = request.form.get('description')
+        category_id = request.form.get('category_id')
         # time_required = request.form.get('time_required')
+        print(f"Name: {name}")
+        print(f"Base Price: {base_price}")
+        print(f"Description: {description}")
+        print(f"Category ID: {category_id}")
+
         
         # Validate inputs
-        if not all([service_name, base_price, description]):
+        if not all([name, base_price, description,category_id]):
             flash('All fields are required!', 'danger')
             return redirect(url_for('AdminServices'))
         
         # Create a new service
-        new_service = Services(
-            service_name=service_name,
+        new_service = Service(
+            name=name,
             base_price=float(base_price),
             description=description,
+            category_id=int(category_id)
             
         )
         db.session.add(new_service)
         db.session.commit()
         flash('Service created successfully!', 'success')
         return redirect(url_for('AdminServices'))
-    services = Services.query.all()
-    professionals = Professionals.query.filter_by(status='pending').all()
+    services = Service.query.all()
+    professionals = Professional.query.filter_by(status='pending').all()
+    categories = Category.query.all()
     print(f"Professionals: {professionals}")
-    return render_template('adminServiceHandling.html',services = services,user = user, professionals=professionals)
+    return render_template('adminServiceHandling.html',services = services,user = user, professionals=professionals , categories=categories)
     # Fetch all services for display (GET request)
 
 
@@ -367,7 +387,7 @@ def AdminServices():
 @auth_required
 def delete_service(service_id):
     # Query the service by its ID
-    service_to_delete = Services.query.get(service_id)
+    service_to_delete = Service.query.get(service_id)
     
     if not service_to_delete:
         flash('Service not found!', 'danger')
@@ -380,19 +400,144 @@ def delete_service(service_id):
     
     return redirect(url_for('AdminServices'))
 
+
+@app.route('/admin/services/edit/<int:service_id>', methods=['GET', 'POST'])
+@auth_required
+def edit_service(service_id):
+    service = Service.query.get(service_id)
+    if not service:
+        flash("Service not found.", "danger")
+        return redirect(url_for('AdminServices'))
+    
+    if request.method == 'POST':
+        # Update service details
+        service.name = request.form.get('name')
+        service.base_price = request.form.get('base_price')
+        service.description = request.form.get('description')
+        service.category_id = request.form.get('category_id')
+        
+        if not all([service.name, service.base_price, service.description, service.category_id]):
+            flash("All fields are required.", "danger")
+            return redirect(url_for('edit_service', service_id=service_id))
+        
+        db.session.commit()
+        flash("Service updated successfully.", "success")
+        return redirect(url_for('AdminServices'))
+    
+    # Render edit form
+    categories = Category.query.all()
+    return render_template('service_edit.html', service=service, categories=categories)
+
+
+
 @app.route('/admin/summary')
 @auth_required
 def summary():  
     user = Customer.query.get(session['user_id'])
-    return render_template('adminSummary.html', user = user)
+    return render_template('admin_summary.html', user = user)
 
-@app.route('/admin/Professionals')
+@app.route('/admin/Professionals',methods=['GET', 'POST'])
+@auth_required
 def AdminProfessional():
-    return render_template('adminProfessionalHandling.html')
+    services = Service.query.all()
+    user = Customer.query.get(session['user_id'])
+    professionals = Professional.query.filter_by(status='pending').all()
+    professionals = Professional.query.all()
+    return render_template('adminProfessionalHandling.html',user = user , services=services, professionals=professionals)
+
+@app.route('/delete_professional/<int:professional_id>', methods=['POST'])
+def delete_professional(professional_id):
+    # Fetch the professional from the database
+    professional = Professional.query.get(professional_id)
+    
+    if professional:
+        try:
+            db.session.delete(professional)  # Delete the professional record
+            db.session.commit()  # Commit changes to the database
+            flash('Professional deleted successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()  # Rollback in case of error
+            flash('An error occurred. Could not delete the professional.', 'danger')
+    else:
+        flash('Professional not found.', 'warning')
+    
+    # Redirect to a page that lists all professionals or to an appropriate page
+    return redirect(url_for('view_professionals'))  # Replace with your actual view route
+
+
+@app.route('/professionals')
+def view_professionals():
+    user = Customer.query.get(session['user_id'])
+    professionals = Professional.query.all()
+    return render_template('adminProfessionalHandling.html', user = user, professionals=professionals)
+
+@app.route('/admin/service-requests')
+@auth_required
+def service_requests():
+    user = Customer.query.get(session['user_id'])
+    service_requests = ServiceRequest.query.all()
+    return render_template('service_requests.html',user = user, service_requests=service_requests)
+
+@app.route('/admin/service-requests/<int:request_id>/<string:status>', methods=['POST'])
+@auth_required
+def update_request_status(request_id, status):
+    service_request = ServiceRequest.query.get(request_id)
+    if not service_request:
+        flash('Service request not found', 'danger')
+        return redirect(url_for('service_requests'))
+
+    service_request.status = status
+    db.session.commit()
+
+    flash(f'Service request has been {status}.', 'success')
+    return redirect(url_for('service_requests'))
 
 
 
+@app.route('/admin_dashboard')
+@auth_required
 
+def admin_dashboard():
+    user = Customer.query.get(session['user_id'])
+    return render_template('admin_dashboard.html', user=user)
+
+
+@app.route('/book-services', methods=['GET', 'POST'])
+def book_services():
+    
+    if request.method == 'POST':
+        # Process booking logic
+        
+        service_id = request.form.get('service_id')
+        # Further logic to save booking into database
+        flash("Service booked successfully!", "success")
+        return redirect(url_for('book_services'))
+
+    # Fetch all services grouped by categories
+    categories = Category.query.all()  # Assuming a `Category` model
+    user = Customer.query.get(session['user_id'])
+    print(categories)
+    return render_template('book_services.html',user = user, categories=categories)
+
+@app.route('/service-history')
+def service_history():
+    # Get customer ID from session (assume the user is logged in)
+    customer_id = session.get('user_id')
+    
+    if not customer_id:
+        return redirect(url_for('login'))  # Redirect if not logged in
+
+    # Fetch service requests for the customer
+    customer = Customer.query.get(customer_id)
+    if not customer:
+        return redirect(url_for('Login'))  # Redirect if customer is not found
+
+    service_requests = ServiceRequest.query.filter_by(customer_id=customer.id).all()
+    
+    ratings = {service.id: service.rating for service in service_requests if service.rating is not None}
+    
+    total_ratings = sum(ratings.values())
+    return render_template('service_history.html', service_requests=service_requests, ratings=ratings, total_ratings=total_ratings)
 #Customer Management
 @app.route('/customer_home')
 @auth_required
@@ -400,7 +545,79 @@ def CS_Home():
     user = Customer.query.get(session['user_id'])
     return render_template('customer_home.html', user=user)
 
+@app.route('/admin/customers', methods=['GET', 'POST'])
+@auth_required
+def manage_customers():
+    user = Customer.query.get(session['user_id'])
+    if not user or not user.admin:
+        flash("You don't have permission to access this page.", "danger")
+        return redirect(url_for('home'))
+    
+    if request.method == 'POST':
+        # Adding a new customer
+        customer_id = request.form.get('customer_id')
+        if customer_id:  # Editing an existing customer
+            customer = Customer.query.get(customer_id)
+            if customer:
+                customer.name = request.form.get('name')
+                customer.Email_id = request.form.get('email')
+                customer.address = request.form.get('address')
+                customer.Pin_Code = request.form.get('pin_code')
+                db.session.commit()
+                flash('Customer updated successfully!', 'success')
+            else:
+                flash('Customer not found!', 'danger')
+        else:  # Adding a new customer
+            email = request.form.get('email')
+            if Customer.query.filter_by(Email_id=email).first():
+                flash('Email already exists!', 'danger')
+            else:
+                new_customer = Customer(
+                    name=request.form.get('name'),
+                    Email_id=email,
+                    address=request.form.get('address'),
+                    Pin_Code=request.form.get('pin_code'),
+                )
+                new_customer.set_password(request.form.get('password'))
+                db.session.add(new_customer)
+                db.session.commit()
+                flash('Customer added successfully!', 'success')
+                
+    
+    customers = Customer.query.filter_by(admin=False).all()
+    return render_template('manage_customer.html', user=user, customers=customers)
 
+
+
+@app.route('/admin/customers/edit/<int:customer_id>', methods=['GET', 'POST'])
+@auth_required
+def edit_customer(customer_id):
+    user = Customer.query.get(session['user_id'])
+    if not user or not user.admin:
+        flash("You don't have permission to access this page.", "danger")
+        return redirect(url_for('home'))
+    
+    customer = Customer.query.get_or_404(customer_id)  # Fetch customer or return 404 if not found
+    
+    if request.method == 'POST':
+        # Update the customer information
+        customer.name = request.form.get('name')
+        customer.Email_id = request.form.get('email')
+        customer.address = request.form.get('address')
+        customer.Pin_Code = request.form.get('pin_code')
+        db.session.commit()
+        flash('Customer updated successfully!', 'success')
+        return redirect(url_for('manage_customers'))  # Redirect back to the customer list page
+    
+    return render_template('edit_customer.html', customer=customer)  # Render the edit form
+
+
+
+@app.route('/service-remarks')
+@auth_required
+def service_remarks():
+    user = Customer.query.get(session['user_id'])
+    return render_template('service_remarks.html', user=user)
 
 
 #Professional Management
@@ -408,13 +625,13 @@ def CS_Home():
 @app.route('/professional_home')
 @auth_required
 def SP_Home():
-    user = Professionals.query.get(session.get('prof_id'))
+    user = Professional.query.get(session.get('prof_id'))
     return render_template('professional_home.html', user=user)
 
 @app.route('/professional/dashboard')
 @auth_required
 def prof_dashboard():
-    user = Professionals.query.get(session.get('prof_id'))
+    user = Professional.query.get(session.get('prof_id'))
     return render_template('professional_dashboard.html', user=user)
 
 # @app.route('category/add')
