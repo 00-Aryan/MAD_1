@@ -2,6 +2,8 @@ from functools import wraps
 import os
 from flask import Flask , render_template,redirect,url_for,request,flash ,session , send_from_directory
 
+from datetime import datetime
+
 from models import db, Customer, Professional, Orders, Cart,Category , Service , ServiceRequest
 
 from app import app
@@ -476,7 +478,7 @@ def view_professionals():
 def service_requests():
     user = Customer.query.get(session['user_id'])
     service_requests = ServiceRequest.query.all()
-    return render_template('service_requests.html',user = user, service_requests=service_requests)
+    return render_template('admin_service_requests.html',user = user, service_requests=service_requests)
 
 @app.route('/admin/service-requests/<int:request_id>/<string:status>', methods=['POST'])
 @auth_required
@@ -504,20 +506,139 @@ def admin_dashboard():
 
 @app.route('/book-services', methods=['GET', 'POST'])
 def book_services():
-    
     if request.method == 'POST':
-        # Process booking logic
-        
         service_id = request.form.get('service_id')
-        # Further logic to save booking into database
-        flash("Service booked successfully!", "success")
-        return redirect(url_for('book_services'))
+        if not service_id:
+            flash("Service ID is required.", "danger")
+            return redirect(url_for('book_services'))  # Redirect if no service is selected
+
+        # Fetch the service based on the service_id from the form
+        service = Service.query.get(service_id)
+        if not service:
+            flash("Service not found.", "danger")
+            return redirect(url_for('book_services'))  # Redirect if the service doesn't exist
+
+        # Assuming the user is logged in and their ID is stored in the session
+        customer_id = session.get('user_id')  # Use 'user_id' from session (this should be a customer ID)
+        if not customer_id:
+            flash("You need to be logged in to book a service.", "danger")
+            return redirect(url_for('login'))  # Redirect to login if user is not logged in
+
+        # Create a new service request
+        new_request = ServiceRequest(
+            customer_id=customer_id,  # Link the service request to the logged-in customer
+            service_id=service_id,     # Link the service request to the selected service
+            customer_name=service.name,  # Optional: Use the service name or other relevant data
+            service_type=service.name,  # Store the service type or any other relevant info
+            status='pending'           # Set the initial status of the request to "pending"
+        )
+
+        db.session.add(new_request)  # Add the new request to the session
+        db.session.commit()  # Commit the transaction to the database
+
+        flash("Service requested successfully!", "success")
+        return redirect(url_for('customer_service_requests'))  # Redirect to the page where the user can see their requests
 
     # Fetch all services grouped by categories
-    categories = Category.query.all()  # Assuming a `Category` model
+    categories = Category.query.all()  # Assuming a Category model exists
+    user = Customer.query.get(session['user_id'])  # Get the logged-in customer
+    return render_template('book_services.html', user=user, categories=categories)
+
+@app.route('/customer/service-requests/delete/<int:request_id>', methods=['POST'])
+# @auth_required
+def delete_service_request(request_id):
+    print(f"Attempting to delete service request with ID: {request_id}")
+    customer = Customer.query.get(session['user_id'])  # Get logged-in customer
+    user  = session.get('user_id')
+    # Fetch the specific service request
+    service_request = ServiceRequest.query.get_or_404(request_id)
+    
+    # Ensure the request belongs to the logged-in customer
+    if service_request.customer_id != customer.id:
+        flash("You do not have permission to delete this request.", "danger")
+        return redirect(url_for('customer_service_requests'))
+
+    # Delete the request from the database
+    db.session.delete(service_request)
+    db.session.commit()
+    flash("Service request deleted successfully!", "success")
+    # user = Customer.query.get(session['user_id'])
+    return redirect(url_for('customer_service_requests') )
+
+
+@app.route('/admin/service-requests/edit/<int:request_id>', methods=['GET', 'POST'])
+@auth_required
+def edit_Aservice_request(request_id):
+    service_request = ServiceRequest.query.get(request_id)
+    if not service_request:
+        flash('Service Request not found!', 'danger')
+        return redirect(url_for('service_requests'))
+
+    if request.method == 'POST':
+        # Get the date from the form and convert it to a date object
+        requested_date_str = request.form.get('requested_date')
+        requested_date = datetime.strptime(requested_date_str, '%Y-%m-%d').date() if requested_date_str else None
+        
+        # Update the service request details
+        service_request.status = request.form.get('status')
+        service_request.requested_date = requested_date
+        service_request.remarks = request.form.get('remarks')  # Assuming remarks field exists
+
+        db.session.commit()
+        flash('Service Request updated successfully!', 'success')
+        return redirect(url_for('service_requests'))
+
+    # Format the requested_date for the input field (Y-m-d format)
+    formatted_date = service_request.requested_date.strftime('%Y-%m-%d') if service_request.requested_date else ''
+    return render_template('edit_Aservice_request.html', service_request=service_request, formatted_date=formatted_date)
+
+@app.route('/customer/service-requests/edit/<int:request_id>', methods=['GET', 'POST'])
+@auth_required
+def edit_Cservice_request(request_id):
+    customer = Customer.query.get(session['user_id'])  # Get logged-in customer
+    
+    # Fetch the specific service request
+    service_request = ServiceRequest.query.get_or_404(request_id)
+    
+    # Ensure the request belongs to the logged-in customer
+    if service_request.customer_id != customer.id:
+        flash("You do not have permission to edit this request.", "danger")
+        return redirect(url_for('customer_service_requests'))
+    
+    # Handle the form submission to edit the request
+    if request.method == 'POST':
+        
+        requested_date_str = request.form.get('requested_date')
+        requested_date = datetime.strptime(requested_date_str, '%Y-%m-%d').date() if requested_date_str else None
+        
+        service_request.status = request.form['status']
+        service_request.requested_date = requested_date
+        service_request.remarks = request.form['remarks']
+        
+        db.session.commit()
+        flash("Service request updated successfully!", "success")
+        return redirect(url_for('customer_service_requests'))
+
+    # Render the edit form with existing data
     user = Customer.query.get(session['user_id'])
-    print(categories)
-    return render_template('book_services.html',user = user, categories=categories)
+    return render_template('edit_Cservice_request.html', service_request=service_request,user = user)
+
+
+
+@app.route('/admin/service-requests/close/<int:request_id>', methods=['POST'])
+@auth_required
+def close_service_request(request_id):
+    service_request = ServiceRequest.query.get(request_id)
+    if not service_request:
+        flash('Service Request not found!', 'danger')
+        return redirect(url_for('service_requests'))
+
+    # Close the service request
+    service_request.status = 'closed'
+    db.session.commit()
+    flash('Service Request closed successfully!', 'success')
+    return redirect(url_for('service_requests'))
+
 
 @app.route('/service-history')
 def service_history():
@@ -544,6 +665,16 @@ def service_history():
 def CS_Home():
     user = Customer.query.get(session['user_id'])
     return render_template('customer_home.html', user=user)
+
+@app.route('/customer/service-requests', methods=['GET','POST'])
+@auth_required  
+def customer_service_requests():
+    
+    customer = Customer.query.get(session['user_id'])  # Fetch logged-in customer.
+    service_requests = ServiceRequest.query.filter_by(customer_id=customer.id).all()  # Fetch the requests for the customer.
+    user = Customer.query.get(session['user_id'])
+    return render_template('customer_service_requests.html',user = user, service_requests=service_requests )
+
 
 @app.route('/admin/customers', methods=['GET', 'POST'])
 @auth_required

@@ -1,0 +1,42 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Edit Service Request
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Edit Service Request</h1>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Edit Service Request ID: {{ service_request.id }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select name="status" id="status" class="form-control">
+                        <option value="pending" {% if service_request.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="approved" {% if service_request.status == 'approved' %}selected{% endif %}>Approved</option>
+                        <option value="closed" {% if service_request.status == 'closed' %}selected{% endif %}>Closed</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="requested_date" class="form-label">Requested Date</label>
+                    <input type="date" name="requested_date" id="requested_date" class="form-control" value="{{ formatted_date }}" required>
+                </div>
+                
+
+                <div class="mb-3">
+                    <label for="remarks" class="form-label">Remarks</label>
+                    <textarea name="remarks" id="remarks" class="form-control" rows="4">{{ service_request.remarks }}</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success">Update Request</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

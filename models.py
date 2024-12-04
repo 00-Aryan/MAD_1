@@ -85,10 +85,12 @@ class ServiceRequest(db.Model):
     requested_date = db.Column(db.Date, default=datetime.utcnow)
     status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
     professional_id = db.Column(db.Integer, db.ForeignKey('professional.id'), nullable=True)
 
     customer = db.relationship('Customer', backref='service_requests')
-    professionals = db.relationship('Professional', backref='assigned_requests', lazy=True)  # plural form of 'professional'
+    service = db.relationship('Service', backref='service_requests') 
+    professionals = db.relationship('Professional', backref='assigned_requests', lazy=True)  
 
 
 # Order Model
