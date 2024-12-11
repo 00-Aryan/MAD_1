@@ -49,15 +49,13 @@
 
 
             <!-- Category Selection -->
-            <div class="form-group">
-                <label for="category">Select Category</label>
-                <select name="category" id="category" class="form-control">
-                    <option value="" disabled selected>Select a category</option>
-                    <option value="plumbing" {% if user.category == 'plumbing' %}selected{% endif %}>Plumbing</option>
-                    <option value="electrical" {% if user.category == 'electrical' %}selected{% endif %}>Electrical</option>
-                    <option value="cleaning" {% if user.category == 'cleaning' %}selected{% endif %}>Cleaning</option>
-                    <option value="painting" {% if user.category == 'painting' %}selected{% endif %}>Painting</option>
-                    <option value="others" {% if user.category == 'others' %}selected{% endif %}>Others</option>
+            <div class="mb-3">
+                <label for="category_id" class="form-label">Service Name: </label>
+                <select id="category_id" name="category_id" class="form-select" required>
+                    <option value="">--- Select Category ---</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
             <p>Account created on: {{ user.get_date_created() }}</p>  

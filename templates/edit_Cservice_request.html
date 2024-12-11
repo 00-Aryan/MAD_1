@@ -16,12 +16,9 @@ Edit Service Request
             <form method="POST">
                 <div class="mb-3">
                     <label for="status" class="form-label">Status</label>
-                    <select name="status" id="status" class="form-control">
-                        <option value="pending" {% if service_request.status == 'pending' %}selected{% endif %}>Pending</option>
-                        <option value="approved" {% if service_request.status == 'approved' %}selected{% endif %}>Approved</option>
-                        <option value="closed" {% if service_request.status == 'closed' %}selected{% endif %}>Closed</option>
-                    </select>
+                    <p class="form-control-plaintext">{{ service_request.status }}</p>
                 </div>
+                
 
                 <div class="mb-3">
                     <label for="requested_date" class="form-label">Requested Date</label>

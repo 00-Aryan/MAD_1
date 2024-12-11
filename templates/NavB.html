@@ -1,11 +1,18 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="{{ url_for('home') }}">Household Services</a>
+    {% if user and user.role == 'customer' %}
+    <form class="d-flex ms-3" method="GET" action="{{ url_for('search_professionals') }}">
+        <input class="form-control me-2" type="search" name="query" placeholder="Search by name, category, or pin code" aria-label="Search" required>
+        <button class="btn btn-outline-success" type="submit">Search</button>
+    </form>
+    
+        {% endif %}
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-            {# render auth links if not logged in, else normal links  #}
+            
             {% if user %}
     {% if user.admin %}
         <!-- Admin Links -->
@@ -34,6 +41,7 @@
         </li>
     {% elif user.role == 'customer' %}
         <!-- Customer Links -->
+         
         <li class="nav-item">
             <a class="nav-link" href="{{ url_for('profile') }}">Profile</a>
         </li>
@@ -46,6 +54,7 @@
         <li class="nav-item">
             <a class="nav-link" href="{{ url_for('Logout') }}">Logout</a>
         </li>
+
     {% endif %}
 {% else %}
     <!-- Guest Links -->

@@ -1,0 +1,44 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Search Professionals
+{% endblock %}
+
+{% block content %}
+
+<h1>Search Results for "{{ query }}"</h1>
+
+{% if professionals %}
+<h2>Available Professionals</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Service Type</th>
+            <th>Pin Code</th>
+            <th>Description</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for professional in professionals %}
+        <tr>
+            <td>{{ professional.name }}</td>
+            <td>{{ professional.service_type }}</td>
+            <td>{{ professional.Pin_Code }}</td>
+            <td>{{ professional.description }}</td>
+            <td>
+                <form action="{{ url_for('book_professional') }}" method="POST">
+                    <input type="hidden" name="professional_id" value="{{ professional.id }}">
+                    <button type="submit" class="btn btn-primary">Book</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No professionals found for your search query.</p>
+{% endif %}
+
+{% endblock %}

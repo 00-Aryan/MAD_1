@@ -84,7 +84,8 @@ def sp_profile():
     if not user:
         flash('Service Professional not found', 'danger')
         return redirect(url_for('home'))  # Redirect to home if the professional is not found
-    return render_template('sp_profile.html', user=user)
+    categories = Category.query.all()
+    return render_template('sp_profile.html', user=user, categories = categories)
 
 # @app.route("/services")
 # def services():
@@ -556,14 +557,14 @@ def delete_service_request(request_id):
     # Ensure the request belongs to the logged-in customer
     if service_request.customer_id != customer.id:
         flash("You do not have permission to delete this request.", "danger")
-        return redirect(url_for('customer_service_requests'))
+        return redirect(url_for('customer_sent_requests'))
 
     # Delete the request from the database
     db.session.delete(service_request)
     db.session.commit()
     flash("Service request deleted successfully!", "success")
     # user = Customer.query.get(session['user_id'])
-    return redirect(url_for('customer_service_requests') )
+    return redirect(url_for('customer_sent_requests') )
 
 
 @app.route('/admin/service-requests/edit/<int:request_id>', methods=['GET', 'POST'])
@@ -603,7 +604,7 @@ def edit_Cservice_request(request_id):
     # Ensure the request belongs to the logged-in customer
     if service_request.customer_id != customer.id:
         flash("You do not have permission to edit this request.", "danger")
-        return redirect(url_for('customer_service_requests'))
+        return redirect(url_for('customer_sent_requests'))
     
     # Handle the form submission to edit the request
     if request.method == 'POST':
@@ -611,13 +612,13 @@ def edit_Cservice_request(request_id):
         requested_date_str = request.form.get('requested_date')
         requested_date = datetime.strptime(requested_date_str, '%Y-%m-%d').date() if requested_date_str else None
         
-        service_request.status = request.form['status']
+        # service_request.status = request.form['status']
         service_request.requested_date = requested_date
         service_request.remarks = request.form['remarks']
         
         db.session.commit()
         flash("Service request updated successfully!", "success")
-        return redirect(url_for('customer_service_requests'))
+        return redirect(url_for('customer_sent_requests'))
 
     # Render the edit form with existing data
     user = Customer.query.get(session['user_id'])
@@ -625,19 +626,180 @@ def edit_Cservice_request(request_id):
 
 
 
-@app.route('/admin/service-requests/close/<int:request_id>', methods=['POST'])
+@app.route('/customer/service-requests/close/<int:request_id>', methods=['POST'])
 @auth_required
 def close_service_request(request_id):
-    service_request = ServiceRequest.query.get(request_id)
-    if not service_request:
-        flash('Service Request not found!', 'danger')
-        return redirect(url_for('service_requests'))
+    customer = Customer.query.get(session['user_id'])  # Get the logged-in customer
+    service_request = ServiceRequest.query.get_or_404(request_id)
 
-    # Close the service request
+    # Ensure the service request belongs to the logged-in customer
+    if service_request.customer_id != customer.id:
+        flash("You do not have permission to close this request.", "danger")
+        return redirect(url_for('customer_service_requests'))
+
+    # Update the status to "closed"
     service_request.status = 'closed'
     db.session.commit()
-    flash('Service Request closed successfully!', 'success')
-    return redirect(url_for('service_requests'))
+    flash("Service request closed successfully!", "success")
+    return redirect(url_for('customer_service_requests'))
+
+# @app.route('/search_services', methods=['GET'])
+# def search_services():
+#     query = request.args.get('query', '').strip()
+#     if not query:
+#         return render_template('search_results.html', services=[], query=query)
+
+#     # Build the base query
+#     services_query = Service.query.join(Category, isouter=True).join(Professional, Service.professional_id == Professional.id, isouter=True)
+
+#     # Apply filters
+#     services = services_query.filter(
+#         (Service.name.ilike(f"%{query}%")) |
+#         (Service.description.ilike(f"%{query}%")) |
+#         (Category.name.ilike(f"%{query}%")) |
+#         (Professional.Pin_Code.ilike(f"%{query}%"))
+#     ).all()
+#     user = Customer.query.get(session['user_id'])
+#     return render_template('search_results.html', services=services, query=query, user =user)
+
+@app.route('/search_professionals', methods=['GET'])
+def search_professionals():
+    query = request.args.get('query', '').strip()
+    if not query:
+        return render_template('search_results.html', professionals=[], query=query)
+
+    # Build the query to search for professionals
+    professionals_query = Professional.query
+
+    # Apply filters for name, service_type, and Pin_Code
+    professionals = professionals_query.filter(
+        (Professional.name.ilike(f"%{query}%")) |
+        (Professional.service_type.ilike(f"%{query}%")) |
+        (Professional.Pin_Code.ilike(f"%{query}%"))
+    ).all()
+
+    user = Customer.query.get(session['user_id'])
+    return render_template('search_results.html', professionals=professionals, query=query, user=user)
+
+
+@app.route('/book_professional', methods=['POST'])
+def book_professional():
+    professional_id = request.form.get('professional_id')
+    user_id = session.get('user_id')  
+
+    if not user_id:
+        flash("You need to log in to book a professional!", "error")
+        return redirect(url_for('login'))  # Redirect to the login page
+
+    # Fetch the customer information
+    customer = Customer.query.get(user_id)
+    if not customer:
+        flash("Invalid customer information!", "error")
+        return redirect(url_for('search_professionals'))
+    
+    professional = Professional.query.get(professional_id)
+    service_type = professional.service_type
+
+    # Create a new booking entry
+    booking = ServiceRequest(
+        customer_name=customer.name,
+        service_type=service_type,  
+        status="pending",
+        customer_id=user_id,
+        professional_id=professional_id
+    )
+    db.session.add(booking)
+    db.session.commit()
+
+    flash("Professional successfully booked! Please wait for confirmation.", "success")
+    return redirect(url_for('customer_sent_requests'))
+
+
+# service requested status changed by professional
+@app.route('/update_service_request_status/<int:service_request_id>', methods=['POST'])
+def update_service_request_status(service_request_id):
+    user_id = session.get('user_id')  # Get the logged-in user's ID
+    if not user_id:
+        flash("You need to log in to update the status!", "error")
+        return redirect(url_for('login'))
+
+    # Fetch the professional information
+    professional = Professional.query.get(user_id)
+    if not professional:
+        flash("You are not authorized to update this service request!", "error")
+        return redirect(url_for('search_professionals'))
+
+    # Fetch the service request
+    service_request = ServiceRequest.query.get(service_request_id)
+    if not service_request:
+        flash("Service request not found!", "error")
+        return redirect(url_for('customer_sent_requests'))
+
+    # Check if the logged-in professional is the one associated with this service request
+    if service_request.professional_id != professional.id:
+        flash("You are not authorized to update this service request!", "error")
+        return redirect(url_for('customer_sent_requests'))
+
+    # Get the new status from the form (or set it directly)
+    new_status = request.form.get('status')
+    if new_status not in ['pending', 'approved', 'rejected', 'completed']:
+        flash("Invalid status!", "error")
+        return redirect(url_for('customer_sent_requests'))
+
+    # Update the status of the service request
+    service_request.status = new_status
+    try:
+        db.session.commit()
+        flash("Service request status updated successfully.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash("An error occurred while updating the status.", "error")
+
+    return redirect(url_for('customer_sent_requests'))
+
+
+
+
+
+@app.route('/delete_request/<int:request_id>', methods=['POST'])
+@auth_required
+def delete_request(request_id):
+    user_id = session.get('user_id')  
+    request_to_delete = ServiceRequest.query.filter_by(id=request_id, customer_id=user_id).first()
+    
+    if not request_to_delete:
+        flash("Request not found or unauthorized access.", "danger")
+        return redirect(url_for('customer_sent_requests'))
+    
+    try:
+        db.session.delete(request_to_delete)
+        db.session.commit()
+        flash("Request deleted successfully.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash("An error occurred while deleting the request.", "danger")
+    
+    return redirect(url_for('customer_sent_requests'))
+
+@app.route('/customer_sent_requests', methods=['GET', 'POST'])
+def customer_sent_requests():
+    user_id = session.get('user_id') 
+
+    if not user_id:
+        flash("Please log in to view your sent requests.", "error")
+        return redirect(url_for('login'))
+
+    # Fetch customer and their sent requests
+    customer = Customer.query.get(user_id)
+    if not customer:
+        flash("Invalid customer!", "error")
+        return redirect(url_for('home'))
+
+    sent_requests = ServiceRequest.query.filter_by(customer_id=user_id).join(Professional, isouter=True).all()
+    user = Customer.query.get(session['user_id'])
+    for req in sent_requests:
+        print(req.id, req.professionals)
+    return render_template('customer_sent_request.html', customer=customer, sent_requests=sent_requests, user=user)
 
 
 @app.route('/service-history')
@@ -673,7 +835,7 @@ def customer_service_requests():
     customer = Customer.query.get(session['user_id'])  # Fetch logged-in customer.
     service_requests = ServiceRequest.query.filter_by(customer_id=customer.id).all()  # Fetch the requests for the customer.
     user = Customer.query.get(session['user_id'])
-    return render_template('customer_service_requests.html',user = user, service_requests=service_requests )
+    return render_template('customer_sent_requests.html',user = user, service_requests=service_requests )
 
 
 @app.route('/admin/customers', methods=['GET', 'POST'])

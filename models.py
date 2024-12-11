@@ -39,6 +39,7 @@ class Professional(db.Model):
     status = db.Column(db.String(16), nullable=False, default='pending')
     role = db.Column(db.String(16), nullable=False, default='service_professional')
     category = db.relationship('Category', backref='professionals', lazy=True)
+    # services = db.relationship('Service', backref='professionals', lazy=True)
     
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     document = db.Column(db.String(256), nullable=True)  # New column to store document path
@@ -65,6 +66,11 @@ class Category(db.Model):
     name = db.Column(db.String(32), nullable=False)
 
 
+service_professional_association = db.Table('service_professional_association',
+    db.Column('service_id', db.Integer, db.ForeignKey('service.id'), primary_key=True),
+    db.Column('professional_id', db.Integer, db.ForeignKey('professional.id'), primary_key=True)
+)
+
 # Service Model
 class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -72,9 +78,15 @@ class Service(db.Model):
     name = db.Column(db.String(64), nullable=False)
     description = db.Column(db.String(32), nullable=False)
     time_required = db.Column(db.String(32), nullable=True)
+    ratings = db.Column(db.Integer, nullable=True)
+    
+    professionals = db.relationship('Professional', secondary=service_professional_association, backref='services')
+    
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
     category = db.relationship('Category', backref='services')
-    ratings = db.Column(db.Integer, nullable=True)
+    professional_id = db.Column(db.Integer, db.ForeignKey('professional.id'), nullable=True) 
+    
+    
 
 
 # ServiceRequest Model - Updated to use plural 'professionals'
@@ -85,12 +97,14 @@ class ServiceRequest(db.Model):
     requested_date = db.Column(db.Date, default=datetime.utcnow)
     status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
-    service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=True)
     professional_id = db.Column(db.Integer, db.ForeignKey('professional.id'), nullable=True)
+    remarks = db.Column(db.String(500), nullable=True)
 
+    # Foreign Keys
     customer = db.relationship('Customer', backref='service_requests')
     service = db.relationship('Service', backref='service_requests') 
-    professionals = db.relationship('Professional', backref='assigned_requests', lazy=True)  
+    professionals = db.relationship('Professional', backref='service_requests', lazy=True)  
 
 
 # Order Model
