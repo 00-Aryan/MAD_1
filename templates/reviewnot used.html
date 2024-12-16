@@ -1,0 +1,42 @@
+<!-- add review form  -->
+<td>
+    {% if user and user.role == 'customer' %}
+    <!-- Write Review Form -->
+    <form action="{{ url_for('add_review') }}" method="POST">
+        <input type="hidden" name="professional_id" value="{{ professional.id }}">
+        <div class="input-group">
+            <select class="form-select" name="rating" required>
+                <option value="" disabled selected>Rate</option>
+                <option value="5">★★★★★</option>
+                <option value="4">★★★★</option>
+                <option value="3">★★★</option>
+                <option value="2">★★</option>
+                <option value="1">★</option>
+            </select>
+            <input type="text" name="comment" class="form-control" placeholder="Write a review (optional)">
+            <button type="submit" class="btn btn-outline-primary">Submit</button>
+        </div>
+    </form>
+    {% endif %}
+</td>
+
+<!-- show review -->
+<tr>
+    <td colspan="5">
+        <h6>Reviews:</h6>
+        {% if professional.reviews %}
+        <ul class="list-group">
+            {% for review in professional.reviews %}
+            <li class="list-group-item">
+                <strong>{{ review.user.name }}</strong> rated 
+                <span class="text-warning">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</span>
+                <p>{{ review.comment }}</p>
+                <small class="text-muted">Posted on {{ review.created_at.strftime('%Y-%m-%d') }}</small>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No reviews yet.</p>
+        {% endif %}
+    </td>
+</tr>

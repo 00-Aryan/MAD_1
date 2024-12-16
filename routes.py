@@ -2,9 +2,9 @@ from functools import wraps
 import os
 from flask import Flask , render_template,redirect,url_for,request,flash ,session , send_from_directory
 
-from datetime import datetime
+from datetime import date, datetime
 
-from models import db, Customer, Professional, Orders, Cart,Category , Service , ServiceRequest
+from models import db, Customer, Professional, Orders, Cart,Category , Service , ServiceRequest , Review
 
 from app import app
 
@@ -800,6 +800,144 @@ def customer_sent_requests():
     for req in sent_requests:
         print(req.id, req.professionals)
     return render_template('customer_sent_request.html', customer=customer, sent_requests=sent_requests, user=user)
+
+@app.route('/block_professional', methods=['POST'])
+def block_professional():
+    query = request.form.get('query', '').strip()
+    professional_id = request.form.get('professional_id')
+    professional = Professional.query.get(professional_id)
+    if professional:
+        professional.is_blocked = True
+        db.session.commit()
+    return redirect(url_for('search_professionals', query=query))
+
+@app.route('/unblock_professional', methods=['POST'])
+def unblock_professional():
+    query = request.form.get('query', '').strip()  # Get the query from the form
+    professional_id = request.form.get('professional_id')
+    professional = Professional.query.get(professional_id)
+    
+    if professional:
+        professional.is_blocked = False  # Update the block status
+        db.session.commit()
+    
+    # Redirect to the search page with the same query
+    return redirect(url_for('search_professionals', query=query))
+
+@app.route('/add_review', methods=['POST'])
+def add_review():
+    professional_id = request.form.get('professional_id')
+    rating = request.form.get('rating')
+    comment = request.form.get('comment', '').strip()
+
+    user_id = session.get('user_id')  # Get the logged-in user's ID
+    if not user_id:
+        flash('You must be logged in to add a review.', 'danger')
+        return redirect(url_for('search_professionals'))
+
+    # Validate input
+    if not rating or not professional_id:
+        flash('Rating and professional ID are required.', 'danger')
+        return redirect(url_for('search_professionals'))
+
+    # Save the review
+    review = Review(
+        professional_id=professional_id,
+        user_id=user_id,
+        rating=int(rating),
+        comment=comment
+    )
+    db.session.add(review)
+    db.session.commit()
+
+    flash('Your review has been submitted.', 'success')
+    return redirect(url_for('search_professionals', query=request.args.get('query', '')))
+
+@app.route('/view_todays_requests')
+def view_todays_requests():
+    professional_id = session.get('user_id')
+    if not professional_id:
+        flash("You need to log in to view your requests!", "error")
+        return redirect(url_for('login'))
+
+    today = date.today()
+    todays_requests = ServiceRequest.query.filter_by(professional_id=professional_id, requested_date=today).all()
+    user = Professional.query.get(session.get('prof_id'))
+    return render_template('todays_requests.html', requests=todays_requests, user = user)
+
+@app.route('/view_closed_requests')
+def view_closed_requests():
+    professional_id = session.get('user_id')
+    if not professional_id:
+        flash("You need to log in to view your requests!", "error")
+        return redirect(url_for('login'))
+
+    closed_requests = ServiceRequest.query.filter_by(professional_id=professional_id, status='closed').all()
+    user = Professional.query.get(session.get('prof_id'))
+    return render_template('closed_requests.html', requests=closed_requests, user = user)
+
+
+@app.route('/search_customers', methods=['GET'])
+def search_customers():
+    pin_code = request.args.get('Pin_Code')
+    service_type = request.args.get('service_type')
+    requested_date = request.args.get('requested_date')  # Capture the requested_date from the query params
+
+    # Base query
+    query = ServiceRequest.query.join(Customer).filter(ServiceRequest.status != 'closed')
+
+    # Apply filters
+    if pin_code:
+        query = query.filter(Customer.Pin_Code == pin_code)
+    if service_type:
+        query = query.filter(ServiceRequest.service_type == service_type)
+    if requested_date:
+        try:
+            # Convert requested_date string into a date object
+            date_filter = datetime.strptime(requested_date, '%Y-%m-%d').date()
+            query = query.filter(ServiceRequest.requested_date == date_filter)
+        except ValueError:
+            flash("Invalid date format. Please enter a valid date.", "error")
+
+    # Fetch results
+    customer_requests = query.all()
+
+    # Fetch distinct service types for the dropdown
+    service_types = db.session.query(ServiceRequest.service_type).distinct().all()
+    service_types = [st[0] for st in service_types]  # Extract service type strings
+    user = Professional.query.get(session.get('prof_id'))
+    return render_template(
+        'search_customers.html',
+        customer_requests=customer_requests,
+        service_types=service_types,
+        user = user
+    )
+
+@app.route('/update_Crequest_status/<int:request_id>', methods=['POST'])
+def update_Crequest_status(request_id):
+    if 'user_id' not in session:
+        flash("You need to log in to perform this action.", "error")
+        return redirect(url_for('login'))
+    
+    # Check if the logged-in user is a professional
+    professional = Professional.query.get(session.get('user_id'))
+    if not professional:
+        flash("Unauthorized action. Only professionals can update requests.", "error")
+        return redirect(url_for('search_customers'))
+    
+    # Fetch the request and new status
+    service_request = ServiceRequest.query.get_or_404(request_id)
+    new_status = request.form.get('new_status')
+
+    if new_status not in ['approved', 'closed', 'rejected']:
+        flash("Invalid status update.", "error")
+        return redirect(url_for('search_customers'))
+
+    # Update the request status
+    service_request.status = new_status
+    db.session.commit()
+    flash(f"Request ID {request_id} status updated to '{new_status}'.", "success")
+    return redirect(url_for('search_customers'))
 
 
 @app.route('/service-history')

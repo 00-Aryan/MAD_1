@@ -1,8 +1,52 @@
 {% extends 'layout.html' %}
 
 {% block title %}
-Login - Household Services
+Professional Dashboard
 {% endblock %}
+
 {% block content %}
-<h1>Service_professional_Homepage</h1>
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Professional Dashboard</h1>
+    <div class="row">
+        <!-- Today's Requests Card -->
+        <div class="col-md-6">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">
+                    <h5 class="card-title">Today's Requests</h5>
+                </div>
+                <div class="card-body">
+                    <h2 class="card-text text-center">{{ todays_requests|length }}</h2>
+                    <p class="text-center">Requests received for today</p>
+                    <a href="{{ url_for('view_todays_requests') }}" class="btn btn-light btn-block">View Details</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Closed Requests Card -->
+        <div class="col-md-6">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">
+                    <h5 class="card-title">Closed Requests</h5>
+                </div>
+                <div class="card-body">
+                    <h2 class="card-text text-center">{{ closed_requests|length }}</h2>
+                    <p class="text-center">Requests you have successfully completed</p>
+                    <a href="{{ url_for('view_closed_requests') }}" class="btn btn-light btn-block">View Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block style %}
+<style>
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .btn-block {
+        width: 100%;
+    }
+</style>
 {% endblock %}

@@ -16,6 +16,7 @@ class Customer(db.Model):
     Pin_Code = db.Column(db.String(8))
     admin = db.Column(db.Boolean, default=False, nullable=False)
     role = db.Column(db.String(16), nullable=False, default='customer')
+    reviews = db.relationship('Review', back_populates='user', cascade='all, delete-orphan')
     
     def set_password(self, password):
         self.passhash = generate_password_hash(password)
@@ -40,6 +41,10 @@ class Professional(db.Model):
     role = db.Column(db.String(16), nullable=False, default='service_professional')
     category = db.relationship('Category', backref='professionals', lazy=True)
     # services = db.relationship('Service', backref='professionals', lazy=True)
+
+    reviews = db.relationship('Review', back_populates='professional', cascade='all, delete-orphan')
+    is_blocked = db.Column(db.Boolean, default=False)
+
     
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     document = db.Column(db.String(256), nullable=True)  # New column to store document path
@@ -58,6 +63,19 @@ class Professional(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.passhash, password)
+
+
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    professional_id = db.Column(db.Integer, db.ForeignKey('professional.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  # Rating out of 5
+    comment = db.Column(db.Text, nullable=True)    # Optional comment
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    professional = db.relationship('Professional', back_populates='reviews')
+    user = db.relationship('Customer', back_populates='reviews')
+
 
 
 # Category Model

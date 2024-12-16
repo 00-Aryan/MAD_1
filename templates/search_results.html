@@ -27,12 +27,32 @@ Search Professionals
             <td>{{ professional.service_type }}</td>
             <td>{{ professional.Pin_Code }}</td>
             <td>{{ professional.description }}</td>
-            <td>
-                <form action="{{ url_for('book_professional') }}" method="POST">
-                    <input type="hidden" name="professional_id" value="{{ professional.id }}">
-                    <button type="submit" class="btn btn-primary">Book</button>
-                </form>
-            </td>
+        
+<td>
+    {% if user and user.role == 'Admin' %}
+        {% if professional.is_blocked %}
+        <!-- Unblock Button -->
+        <form action="{{ url_for('unblock_professional') }}" method="POST">
+            <input type="hidden" name="professional_id" value="{{ professional.id }}">
+            <input type="hidden" name="query" value="{{ query }}"> <!-- Pass the query -->
+            <button type="submit" class="btn btn-success">Unblock</button>
+        </form>
+        {% else %}
+        <!-- Block Button -->
+        <form action="{{ url_for('block_professional') }}" method="POST">
+            <input type="hidden" name="professional_id" value="{{ professional.id }}">
+            <input type="hidden" name="query" value="{{ query }}"> <!-- Pass the query -->
+            <button type="submit" class="btn btn-danger">Block</button>
+        </form>
+        {% endif %}
+    {% else %}
+        <!-- Other user actions (e.g., Book) -->
+        <form action="{{ url_for('book_professional') }}" method="POST">
+            <input type="hidden" name="professional_id" value="{{ professional.id }}">
+            <button type="submit" class="btn btn-primary">Book</button>
+        </form>
+    {% endif %}
+</td>
         </tr>
         {% endfor %}
     </tbody>

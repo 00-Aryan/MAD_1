@@ -1,0 +1,97 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Search Customer Requests
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Search Customer Requests</h1>
+
+    <!-- Search Form -->
+    <form method="GET" action="{{ url_for('search_customers') }}" class="mb-4">
+        <div class="row">
+            <div class="col-md-3">
+                <label for="pin_code" class="form-label">Pin Code</label>
+                <input type="text" id="pin_code" name="pin_code" class="form-control" placeholder="Enter Pin Code" value="{{ request.args.get('pin_code', '') }}">
+            </div>
+            <div class="col-md-3">
+                <label for="service_type" class="form-label">Service Type</label>
+                <select id="service_type" name="service_type" class="form-select">
+                    <option value="">-- Select Service Type --</option>
+                    {% for service_type in service_types %}
+                    <option value="{{ service_type }}" {% if request.args.get('service_type') == service_type %}selected{% endif %}>
+                        {{ service_type }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="requested_date" class="form-label">Requested Date</label>
+                <input type="date" id="requested_date" name="requested_date" class="form-control" value="{{ request.args.get('requested_date', '') }}">
+            </div>
+            <div class="col-md-3 align-self-end">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Search Results -->
+    {% if customer_requests %}
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                    <th>Customer Name</th>
+                    <th>Service Type</th>
+                    <th>Pin Code</th>
+                    <th>Requested Date</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in customer_requests %}
+                <tr>
+                    <td>{{ request.id }}</td>
+                    <td>{{ request.customer.name }}</td>
+                    <td>{{ request.service_type }}</td>
+                    <td>{{ request.customer.pin_code }}</td>
+                    <td>{{ request.requested_date.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <!-- Current Status -->
+                        {% if request.status == 'pending' %}
+                        <span class="badge bg-warning text-dark">{{ request.status }}</span>
+                        {% elif request.status == 'approved' %}
+                        <span class="badge bg-success">{{ request.status }}</span>
+                        {% elif request.status == 'closed' %}
+                        <span class="badge bg-secondary">{{ request.status }}</span>
+                        {% else %}
+                        <span class="badge bg-danger">{{ request.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ request.remarks if request.remarks else 'N/A' }}</td>
+                    <td>
+                        <!-- Status Update Form -->
+                        <form method="POST" action="{{ url_for('update_Crequest_status', request_id=request.id) }}" style="display: inline;">
+                            <select name="new_status" class="form-select form-select-sm mb-2" required>
+                                <option value="" disabled selected>Change Status</option>
+                                <option value="approved">Approved</option>
+                                <option value="closed">Closed</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="alert alert-info">No customer requests found for the given criteria.</p>
+    {% endif %}
+</div>
+{% endblock %}
